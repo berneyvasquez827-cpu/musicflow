@@ -5,12 +5,12 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const escala = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
-let datosBiblioteca = []; // Variable global para el filtro
 
 // MOTOR DE TRANSPORTE (Versión Blindada)
 function motorTransporte(texto, tOrig, tCant) {
     const diff = (parseInt(tCant) - parseInt(tOrig) + 12) % 12;
     if (diff === 0 || isNaN(diff)) return texto;
+
     const regex = /\b([A-G][#b]?)(m?7?M?4?2?v?(\/[A-G][#b]?)?)\b/g;
     return texto.replace(regex, (match, nota, resto) => {
         let i = escala.indexOf(nota.toUpperCase());
@@ -23,33 +23,6 @@ function motorTransporte(texto, tOrig, tCant) {
         return `<span class="chord">${n}${b}</span>`;
     });
 }
-
-// FILTRO DE BÚSQUEDA
-function filtrarBiblioteca() {
-    const busqueda = document.getElementById('buscar-biblioteca').value.toLowerCase();
-    const list = document.getElementById('lista-catalogo');
-    list.innerHTML = "";
-    
-    datosBiblioteca.forEach(item => {
-        if (item.titulo.toLowerCase().includes(busqueda)) {
-            list.innerHTML += `<div class="item-cat"><span>${item.titulo}</span>
-                <div><button onclick='db.ref("setlist").push(${JSON.stringify(item)})'>➕</button>
-                <button onclick="editar('${item.key}')">✏️</button>
-                <button onclick="db.ref('catalogo/${item.key}').remove()">🗑️</button></div></div>`;
-        }
-    });
-}
-
-// BIBLIOTECA (Escucha de datos)
-db.ref('catalogo').on('value', snap => {
-    datosBiblioteca = [];
-    snap.forEach(i => {
-        let cancion = i.val();
-        cancion.key = i.key; // Guardamos la llave para editar/borrar
-        datosBiblioteca.push(cancion);
-    });
-    filtrarBiblioteca(); // Refresca la lista
-});
 
 // SINCRONIZACIÓN EN TIEMPO REAL
 db.ref('musica_activa').on('value', snap => {
@@ -88,7 +61,19 @@ async function importarPDF(input) {
     reader.readAsArrayBuffer(file);
 }
 
-// GUARDAR Y EDITAR
+// GESTIÓN DE BIBLIOTECA
+db.ref('catalogo').on('value', snap => {
+    const list = document.getElementById('lista-catalogo');
+    list.innerHTML = "";
+    snap.forEach(i => {
+        const s = i.val();
+        list.innerHTML += `<div class="item-cat"><span>${s.titulo}</span>
+            <div><button onclick='db.ref("setlist").push(${JSON.stringify(s)})'>➕</button>
+            <button onclick="editar('${i.key}')">✏️</button>
+            <button onclick="db.ref('catalogo/${i.key}').remove()">🗑️</button></div></div>`;
+    });
+});
+
 async function handleGuardar() {
     const id = document.getElementById('edit-id').value;
     const song = {
