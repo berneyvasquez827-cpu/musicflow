@@ -5,12 +5,14 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const escala = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+let datosBiblioteca = []; // Para el buscador
 
-// MOTOR DE TRANSPORTE (Versión Blindada)
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+
+// TRANSPORTE INTELIGENTE (\b evita cambiar letras dentro de palabras)
 function motorTransporte(texto, tOrig, tCant) {
     const diff = (parseInt(tCant) - parseInt(tOrig) + 12) % 12;
     if (diff === 0 || isNaN(diff)) return texto;
-
     const regex = /\b([A-G][#b]?)(m?7?M?4?2?v?(\/[A-G][#b]?)?)\b/g;
     return texto.replace(regex, (match, nota, resto) => {
         let i = escala.indexOf(nota.toUpperCase());
@@ -24,7 +26,22 @@ function motorTransporte(texto, tOrig, tCant) {
     });
 }
 
-// SINCRONIZACIÓN EN TIEMPO REAL
+// FILTRO DE BÚSQUEDA
+function filtrarBiblioteca() {
+    const busqueda = document.getElementById('buscar-biblioteca').value.toLowerCase();
+    const list = document.getElementById('lista-catalogo');
+    list.innerHTML = "";
+    datosBiblioteca.forEach(item => {
+        if (item.titulo.toLowerCase().includes(busqueda)) {
+            list.innerHTML += `<div class="item-cat"><span>${item.titulo}</span>
+                <div><button onclick='db.ref("setlist").push(${JSON.stringify(item)})'>➕</button>
+                <button onclick="editar('${item.key}')">✏️</button>
+                <button onclick="db.ref('catalogo/${item.key}').remove()">🗑️</button></div></div>`;
+        }
+    });
+}
+
+// ESCUCHA DE DATOS (Visor y Biblioteca)
 db.ref('musica_activa').on('value', snap => {
     const d = snap.val(); if (!d || !d.cancion) return;
     const s = d.cancion;
@@ -35,6 +52,12 @@ db.ref('musica_activa').on('value', snap => {
     document.getElementById('tono-actual').innerText = escala[tActual] || "C";
     document.getElementById('letra-acordes').innerHTML = motorTransporte(s.cuerpo, s.tonoOriginalRegistrado || 0, tActual);
     window.scrollTo({top: 0, behavior: 'smooth'});
+});
+
+db.ref('catalogo').on('value', snap => {
+    datosBiblioteca = [];
+    snap.forEach(i => { let c = i.val(); c.key = i.key; datosBiblioteca.push(c); });
+    filtrarBiblioteca();
 });
 
 // IMPORTAR PDF
@@ -61,19 +84,7 @@ async function importarPDF(input) {
     reader.readAsArrayBuffer(file);
 }
 
-// GESTIÓN DE BIBLIOTECA
-db.ref('catalogo').on('value', snap => {
-    const list = document.getElementById('lista-catalogo');
-    list.innerHTML = "";
-    snap.forEach(i => {
-        const s = i.val();
-        list.innerHTML += `<div class="item-cat"><span>${s.titulo}</span>
-            <div><button onclick='db.ref("setlist").push(${JSON.stringify(s)})'>➕</button>
-            <button onclick="editar('${i.key}')">✏️</button>
-            <button onclick="db.ref('catalogo/${i.key}').remove()">🗑️</button></div></div>`;
-    });
-});
-
+// FUNCIONES DE CONTROL
 async function handleGuardar() {
     const id = document.getElementById('edit-id').value;
     const song = {
@@ -86,6 +97,7 @@ async function handleGuardar() {
     id ? await db.ref('catalogo/' + id).set(song) : await db.ref('catalogo').push(song);
     document.getElementById('form-registro').reset();
     document.getElementById('edit-id').value = "";
+    alert("¡Guardado!");
 }
 
 function editar(id) {
