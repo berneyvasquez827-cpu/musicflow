@@ -5,11 +5,11 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const escala = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
-let datosBiblioteca = []; // Para el buscador
+let datosBiblioteca = [];
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
 
-// TRANSPORTE INTELIGENTE (\b evita cambiar letras dentro de palabras)
+// TRANSPORTE SEGURO
 function motorTransporte(texto, tOrig, tCant) {
     const diff = (parseInt(tCant) - parseInt(tOrig) + 12) % 12;
     if (diff === 0 || isNaN(diff)) return texto;
@@ -41,7 +41,7 @@ function filtrarBiblioteca() {
     });
 }
 
-// ESCUCHA DE DATOS (Visor y Biblioteca)
+// SINCRONIZACIÓN
 db.ref('musica_activa').on('value', snap => {
     const d = snap.val(); if (!d || !d.cancion) return;
     const s = d.cancion;
@@ -51,7 +51,6 @@ db.ref('musica_activa').on('value', snap => {
     document.getElementById('info-tono').innerText = escala[tActual] || "--";
     document.getElementById('tono-actual').innerText = escala[tActual] || "C";
     document.getElementById('letra-acordes').innerHTML = motorTransporte(s.cuerpo, s.tonoOriginalRegistrado || 0, tActual);
-    window.scrollTo({top: 0, behavior: 'smooth'});
 });
 
 db.ref('catalogo').on('value', snap => {
@@ -60,9 +59,9 @@ db.ref('catalogo').on('value', snap => {
     filtrarBiblioteca();
 });
 
-// IMPORTAR PDF
+// PDF Y GUARDADO
 async function importarPDF(input) {
-    const file = input.files[0]; if (!file) return;
+    const file = input.files[0];
     const reader = new FileReader();
     reader.onload = async function() {
         const typedarray = new Uint8Array(this.result);
@@ -71,20 +70,13 @@ async function importarPDF(input) {
         for (let i = 1; i <= pdf.numPages; i++) {
             const page = await pdf.getPage(i);
             const content = await page.getTextContent();
-            const items = content.items.sort((a, b) => b.transform[5] - a.transform[5] || a.transform[4] - b.transform[4]);
-            let lastY = items[0]?.transform[5];
-            for (let item of items) {
-                if (Math.abs(lastY - item.transform[5]) > 5) textoFinal += "\n";
-                textoFinal += item.str + " ";
-                lastY = item.transform[5];
-            }
+            content.items.forEach(item => textoFinal += item.str + " ");
         }
         document.getElementById('input-cuerpo').value = textoFinal;
     };
     reader.readAsArrayBuffer(file);
 }
 
-// FUNCIONES DE CONTROL
 async function handleGuardar() {
     const id = document.getElementById('edit-id').value;
     const song = {
@@ -97,7 +89,6 @@ async function handleGuardar() {
     id ? await db.ref('catalogo/' + id).set(song) : await db.ref('catalogo').push(song);
     document.getElementById('form-registro').reset();
     document.getElementById('edit-id').value = "";
-    alert("¡Guardado!");
 }
 
 function editar(id) {
@@ -109,7 +100,6 @@ function editar(id) {
         document.getElementById('input-tono-original').value = d.tonoOriginalRegistrado;
         document.getElementById('input-tono-cantante').value = d.tonoBase;
         document.getElementById('input-cuerpo').value = d.cuerpo;
-        window.scrollTo(0,0);
     });
 }
 
@@ -123,7 +113,7 @@ db.ref('setlist').on('value', snap => {
         const s = i.val();
         const div = document.createElement('div');
         div.className = "item-setlist";
-        div.innerHTML = `<div><b>${s.titulo}</b></div><button onclick="db.ref('setlist/${i.key}').remove()">✖</button>`;
+        div.innerHTML = `<b>${s.titulo}</b> <button onclick="db.ref('setlist/${i.key}').remove()">✖</button>`;
         div.onclick = (e) => { if(e.target.tagName !== 'BUTTON') db.ref('musica_activa').set({ cancion: s, tono: s.tonoBase }); };
         cont.appendChild(div);
     });
