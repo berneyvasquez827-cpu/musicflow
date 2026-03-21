@@ -21,7 +21,7 @@
             <form id="form-registro">
                 <input type="hidden" id="edit-id">
                 <input type="text" id="input-titulo" placeholder="Título de la Canción">
-                <input type="text" id="input-cantante" placeholder="Cantante / Ministerio">
+                <input type="text" id="input-cantante" placeholder="Cantante">
                 
                 <div class="grid-selects">
                     <div>
@@ -35,12 +35,12 @@
                 </div>
 
                 <label class="btn-pdf">
-                    📄 CARGAR LETRA DESDE PDF
+                    📄 CARGAR PDF
                     <input type="file" id="input-pdf" accept="application/pdf" style="display:none;" onchange="importarPDF(this)">
                 </label>
 
-                <textarea id="input-cuerpo" rows="12" placeholder="Letra y acordes aquí..."></textarea>
-                <button type="button" onclick="handleGuardar()" class="btn-save">GUARDAR EN BIBLIOTECA 💾</button>
+                <textarea id="input-cuerpo" rows="8" placeholder="Letra y acordes..."></textarea>
+                <button type="button" onclick="handleGuardar()" class="btn-save">GUARDAR CANCIÓN 💾</button>
             </form>
         </div>
 
@@ -52,14 +52,11 @@
         <div class="card visor">
             <h1 id="titulo-cancion">---</h1>
             <p class="meta">🎙️ <span id="info-cantante">--</span> | 🎼 TONO: <span id="info-tono">--</span></p>
-            <div id="letra-acordes" class="letra-box">Selecciona una canción...</div>
+            <div id="letra-acordes" class="letra-box">Esperando canción...</div>
         </div>
 
         <div class="card admin-only" style="display:none;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; gap:10px;">
-                <h4 style="margin:0;">📚 BIBLIOTECA</h4>
-                <input type="text" id="buscar-biblioteca" placeholder="🔍 Buscar canción..." onkeyup="filtrarBiblioteca()">
-            </div>
+            <h4>📚 BIBLIOTECA</h4>
             <div id="lista-catalogo"></div>
         </div>
     </div>
