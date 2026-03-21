@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MusicFlow PRO - Banda</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <button onclick="toggleAdmin()" class="btn-top">⚙️ MODO DIRECTOR</button>
+
+        <div class="card admin-only" style="display:none;">
+            <div class="transposer">
+                <button onclick="cambiarTono(-1)">-</button>
+                <div class="circle" id="tono-actual">C</div>
+                <button onclick="cambiarTono(1)">+</button>
+            </div>
+            <hr>
+            <form id="form-registro">
+                <input type="hidden" id="edit-id">
+                <input type="text" id="input-titulo" placeholder="Título de la Canción">
+                <input type="text" id="input-cantante" placeholder="Cantante">
+                
+                <div class="grid-selects">
+                    <div>
+                        <small>Tono Original:</small>
+                        <select id="input-tono-original"></select>
+                    </div>
+                    <div>
+                        <small>Tono Cantante:</small>
+                        <select id="input-tono-cantante"></select>
+                    </div>
+                </div>
+
+                <label class="btn-pdf">
+                    📄 CARGAR PDF
+                    <input type="file" id="input-pdf" accept="application/pdf" style="display:none;" onchange="importarPDF(this)">
+                </label>
+
+                <textarea id="input-cuerpo" rows="8" placeholder="Letra y acordes..."></textarea>
+                <button type="button" onclick="handleGuardar()" class="btn-save">GUARDAR CANCIÓN 💾</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <h3>📋 ORDEN DE HOY</h3>
+            <div id="setlist-items"></div>
+        </div>
+
+        <div class="card visor">
+            <h1 id="titulo-cancion">---</h1>
+            <p class="meta">🎙️ <span id="info-cantante">--</span> | 🎼 TONO: <span id="info-tono">--</span></p>
+            <div id="letra-acordes" class="letra-box">Esperando canción...</div>
+        </div>
+
+        <div class="card admin-only" style="display:none;">
+            <h4>📚 BIBLIOTECA</h4>
+            <div id="lista-catalogo"></div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
