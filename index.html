@@ -56,10 +56,12 @@
         </div>
 
         <div class="card admin-only" style="display:none;">
-            <h4>📚 BIBLIOTECA</h4>
-            <div id="lista-catalogo"></div>
-        </div>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+        <h4 style="margin:0;">📚 BIBLIOTECA</h4>
+        <input type="text" id="buscar-biblioteca" placeholder="🔍 Buscar canción..." onkeyup="filtrarBiblioteca()" style="width: 60%; margin:0; padding: 5px 10px;">
     </div>
+    <div id="lista-catalogo"></div>
+</div>
 
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
