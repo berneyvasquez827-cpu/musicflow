@@ -1,4 +1,109 @@
-body { background: #000; color: #fff; font-family: sans-serif; margin: 0; padding: 10px; }
+/* ESTILO GENERAL */
+body { 
+    background: #000; 
+    color: #fff; 
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+    margin: 0; 
+    padding: 10px; 
+}
+
+.app-container { 
+    max-width: 600px; 
+    margin: auto; 
+}
+
+.card { 
+    background: #121212; 
+    border: 1px solid #333; 
+    border-radius: 12px; 
+    padding: 15px; 
+    margin-bottom: 12px; 
+}
+
+/* VISOR PROFESIONAL (Fuente Courier para que no se muevan los acordes) */
+.letra-box { 
+    background: #000; 
+    padding: 15px; 
+    border-radius: 8px; 
+    white-space: pre; 
+    overflow-x: auto; 
+    font-family: 'Courier New', Courier, monospace; 
+    font-size: 1.15rem; 
+    line-height: 1.9; 
+    border: 1px solid #222;
+    color: #eee;
+}
+
+/* ACORDES */
+.chord { 
+    color: #00ff88; 
+    font-weight: bold; 
+    background: transparent; 
+}
+
+/* BUSCADOR DE BIBLIOTECA */
+#buscar-biblioteca {
+    background: #1a1a1a !important;
+    border: 1px solid #00ff88 !important;
+    color: #00ff88 !important;
+    font-size: 0.95rem;
+    font-weight: bold;
+    margin: 0;
+}
+
+#buscar-biblioteca::placeholder {
+    color: #006633;
+}
+
+/* LISTAS (Setlist y Catálogo) */
+.item-setlist, .item-cat { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    padding: 12px; 
+    border-bottom: 1px solid #222; 
+}
+
+.item-setlist { 
+    background: #1a1a1a; 
+    border-left: 5px solid #00ff88; 
+    margin-bottom: 5px; 
+    cursor: pointer; 
+    border-radius: 5px; 
+}
+
+.item-cat button { 
+    background: #333; 
+    color: white; 
+    border: none; 
+    padding: 8px 10px; 
+    margin-left: 5px; 
+    border-radius: 5px; 
+    cursor: pointer; 
+}
+
+/* BOTONES PRINCIPALES */
+.btn-top { 
+    width: 100%; 
+    padding: 12px; 
+    background: #222; 
+    color: #00ff88; 
+    border: 1px solid #00ff88; 
+    border-radius: 8px; 
+    font-weight: bold; 
+    margin-bottom: 15px; 
+    cursor: pointer;
+}
+
+.btn-save { 
+    width: 100%; 
+    padding: 15px; 
+    background: #00ff88; 
+    color: #000; 
+    font-weight: bold; 
+    border: none; 
+    border-radius: 8px; 
+    margin-top: 10px;body { background: #000; color: #fff; font-family: sans-serif; margin: 0; padding: 10px; }
 .app-container { max-width: 600px; margin: auto; }
 .card { background: #121212; border: 1px solid #333; border-radius: 12px; padding: 15px; margin-bottom: 12px; }
 
