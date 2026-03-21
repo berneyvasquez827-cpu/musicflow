@@ -56,7 +56,10 @@
         </div>
 
         <div class="card admin-only" style="display:none;">
-            <h4>📚 BIBLIOTECA</h4>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; gap:10px;">
+                <h4 style="margin:0;">📚 BIBLIOTECA</h4>
+                <input type="text" id="buscar-biblioteca" onkeyup="filtrarBiblioteca()" placeholder="🔍 Buscar canción..." style="width: 60%; margin:0;">
+            </div>
             <div id="lista-catalogo"></div>
         </div>
     </div>
