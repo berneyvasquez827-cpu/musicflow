@@ -5,12 +5,18 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const escala = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+let cancionesLocales = [];
+let zoomActual = 1.15;
 
-// VARIABLE PARA GUARDAR TODAS LAS CANCIONES
-let cancionesLocales = []; 
+function ajustarZoom(v) {
+    zoomActual += v;
+    if (zoomActual < 0.5) zoomActual = 0.5;
+    const visor = document.getElementById('letra-acordes');
+    if(visor) visor.style.fontSize = zoomActual + "rem";
+}
 
-// TRANSPORTE SEGURO (No toca palabras)
 function motorTransporte(texto, tOrig, tCant) {
+    if (!texto) return "";
     const diff = (parseInt(tCant) - parseInt(tOrig) + 12) % 12;
     if (diff === 0 || isNaN(diff)) return texto;
     const regex = /\b([A-G][#b]?)(m?7?M?4?2?v?(\/[A-G][#b]?)?)\b/g;
@@ -26,20 +32,19 @@ function motorTransporte(texto, tOrig, tCant) {
     });
 }
 
-// SINCRONIZACIÓN EN TIEMPO REAL
 db.ref('musica_activa').on('value', snap => {
     const d = snap.val(); if (!d || !d.cancion) return;
     const s = d.cancion;
-    const tActual = d.tono !== undefined ? d.tono : s.tonoBase;
+    const tActual = d.tono !== undefined ? d.tono : (s.tonoBase || 0);
     document.getElementById('titulo-cancion').innerText = s.titulo;
-    document.getElementById('info-cantante').innerText = s.cantante;
+    document.getElementById('info-cantante').innerText = s.cantante || "--";
     document.getElementById('info-tono').innerText = escala[tActual] || "--";
     document.getElementById('tono-actual').innerText = escala[tActual] || "C";
-    document.getElementById('letra-acordes').innerHTML = motorTransporte(s.cuerpo, s.tonoOriginalRegistrado || 0, tActual);
-    window.scrollTo({top: 0, behavior: 'smooth'});
+    const visor = document.getElementById('letra-acordes');
+    visor.innerHTML = motorTransporte(s.cuerpo, s.tonoOriginalRegistrado || 0, tActual);
+    visor.style.fontSize = zoomActual + "rem";
 });
 
-// PDF A TEXTO
 async function importarPDF(input) {
     const file = input.files[0]; if (!file) return;
     const reader = new FileReader();
@@ -50,7 +55,7 @@ async function importarPDF(input) {
         for (let i = 1; i <= pdf.numPages; i++) {
             const page = await pdf.getPage(i);
             const content = await page.getTextContent();
-            const items = content.items.sort((a, b) => b.transform[5] - a.transform[5] || a.transform[4] - b.transform[4]);
+            const items = content.items.sort((a, b) => (b.transform[5] - a.transform[5]) || (a.transform[4] - b.transform[4]));
             let lastY = items[0]?.transform[5];
             for (let item of items) {
                 if (Math.abs(lastY - item.transform[5]) > 5) textoFinal += "\n";
@@ -58,50 +63,65 @@ async function importarPDF(input) {
                 lastY = item.transform[5];
             }
         }
-        document.getElementById('input-cuerpo').value = textoFinal;
+        document.getElementById('input-cuerpo').value = textoFinal.trim();
     };
     reader.readAsArrayBuffer(file);
 }
 
-// --- BIBLIOTECA CON FILTRO INTELIGENTE ---
+// BIBLIOTECA: RECUPERANDO EDITAR Y ELIMINAR
 db.ref('catalogo').on('value', snap => {
-    cancionesLocales = []; 
-    snap.forEach(i => {
-        let cancion = i.val();
-        cancion.id = i.key;
-        cancionesLocales.push(cancion);
-    });
-    mostrarBiblioteca(); 
+    cancionesLocales = [];
+    snap.forEach(i => { let c = i.val(); c.id = i.key; cancionesLocales.push(c); });
+    filtrarBiblioteca();
 });
 
-function mostrarBiblioteca() {
-    const filtro = document.getElementById('buscar-biblioteca')?.value.toLowerCase() || "";
+function filtrarBiblioteca() {
+    const txt = document.getElementById('buscar-biblioteca').value.toLowerCase();
     const list = document.getElementById('lista-catalogo');
     list.innerHTML = "";
-
+    
     cancionesLocales.forEach(s => {
-        // BUSCADOR INTELIGENTE: Busca en Título O en Cantante
-        const coincideTitulo = s.titulo.toLowerCase().includes(filtro);
-        const coincideCantante = s.cantante.toLowerCase().includes(filtro);
-
-        if (coincideTitulo || coincideCantante) {
-            list.innerHTML += `<div class="item-cat">
-                <span><b>${s.titulo}</b> <br> <small>${s.cantante}</small></span>
-                <div>
-                    <button onclick='db.ref("setlist").push(${JSON.stringify(s)})'>➕</button>
-                    <button onclick="editar('${s.id}')">✏️</button>
-                    <button onclick="db.ref('catalogo/${s.id}').remove()">🗑️</button>
-                </div>
-            </div>`;
+        if (s.titulo.toLowerCase().includes(txt)) {
+            const item = document.createElement('div');
+            // Estilo de fila profesional
+            item.style = "display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #333; background: #1a1a1a; margin-bottom: 4px; border-radius: 4px;";
+            
+            item.innerHTML = `
+                <span style="font-weight: bold; flex-grow: 1;">${s.titulo}</span>
+                <div style="display: flex; gap: 8px;">
+                    <button onclick='agregarAlSetlist("${s.id}")' style="background:none; border:1px solid #444; color:white; cursor:pointer; padding: 5px;">➕</button>
+                    <button onclick='editarCancion("${s.id}")' style="background:none; border:1px solid #444; color:white; cursor:pointer; padding: 5px;">✏️</button>
+                    <button onclick='eliminarCancion("${s.id}")' style="background:none; border:1px solid #444; color:white; cursor:pointer; padding: 5px;">🗑️</button>
+                </div>`;
+            list.appendChild(item);
         }
     });
 }
 
-function filtrarBiblioteca() {
-    mostrarBiblioteca();
+function agregarAlSetlist(id) {
+    const cancion = cancionesLocales.find(c => c.id === id);
+    if(cancion) db.ref("setlist").push(cancion);
 }
 
-// FUNCIONES DE GUARDADO Y EDICIÓN
+function editarCancion(id) {
+    const s = cancionesLocales.find(c => c.id === id);
+    if(s) {
+        document.getElementById('edit-id').value = s.id;
+        document.getElementById('input-titulo').value = s.titulo;
+        document.getElementById('input-cantante').value = s.cantante || "";
+        document.getElementById('input-tono-original').value = s.tonoOriginalRegistrado || 0;
+        document.getElementById('input-tono-cantante').value = s.tonoBase || 0;
+        document.getElementById('input-cuerpo').value = s.cuerpo;
+        window.scrollTo(0, 0);
+    }
+}
+
+function eliminarCancion(id) {
+    if(confirm("¿Seguro que quieres eliminar esta canción de la biblioteca?")) {
+        db.ref('catalogo/' + id).remove();
+    }
+}
+
 async function handleGuardar() {
     const id = document.getElementById('edit-id').value;
     const song = {
@@ -111,26 +131,19 @@ async function handleGuardar() {
         tonoBase: parseInt(document.getElementById('input-tono-cantante').value),
         cuerpo: document.getElementById('input-cuerpo').value
     };
-    id ? await db.ref('catalogo/' + id).set(song) : await db.ref('catalogo').push(song);
+    
+    if(id) {
+        await db.ref('catalogo/' + id).set(song);
+    } else {
+        await db.ref('catalogo').push(song);
+    }
+    
     document.getElementById('form-registro').reset();
     document.getElementById('edit-id').value = "";
 }
 
-function editar(id) {
-    db.ref('catalogo/' + id).once('value', s => {
-        const d = s.val();
-        document.getElementById('edit-id').value = id;
-        document.getElementById('input-titulo').value = d.titulo;
-        document.getElementById('input-cantante').value = d.cantante;
-        document.getElementById('input-tono-original').value = d.tonoOriginalRegistrado;
-        document.getElementById('input-tono-cantante').value = d.tonoBase;
-        document.getElementById('input-cuerpo').value = d.cuerpo;
-        window.scrollTo(0,0);
-    });
-}
-
-function cambiarTono(v) { db.ref('musica_activa/tono').transaction(t => (t + v + 12) % 12); }
 function toggleAdmin() { document.querySelectorAll('.admin-only').forEach(e => e.style.display = e.style.display === 'none' ? 'block' : 'none'); }
+function cambiarTono(v) { db.ref('musica_activa/tono').transaction(t => (t + v + 12) % 12); }
 
 db.ref('setlist').on('value', snap => {
     const cont = document.getElementById('setlist-items');
@@ -139,7 +152,7 @@ db.ref('setlist').on('value', snap => {
         const s = i.val();
         const div = document.createElement('div');
         div.className = "item-setlist";
-        div.innerHTML = `<div><b>${s.titulo}</b></div><button onclick="db.ref('setlist/${i.key}').remove()">✖</button>`;
+        div.innerHTML = `<b>${s.titulo}</b> <button onclick="db.ref('setlist/${i.key}').remove()">✖</button>`;
         div.onclick = (e) => { if(e.target.tagName !== 'BUTTON') db.ref('musica_activa').set({ cancion: s, tono: s.tonoBase }); };
         cont.appendChild(div);
     });
