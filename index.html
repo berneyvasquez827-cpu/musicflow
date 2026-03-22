@@ -52,11 +52,17 @@
         <div class="card visor">
             <h1 id="titulo-cancion">---</h1>
             <p class="meta">🎙️ <span id="info-cantante">--</span> | 🎼 TONO: <span id="info-tono">--</span></p>
+            
+            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 10px;">
+                <button onclick="ajustarZoom(-0.2)" style="background: #333; color: #00ff88; border: 1px solid #00ff88; padding: 5px 12px; border-radius: 4px; cursor: pointer; font-weight: bold;">A -</button>
+                <button onclick="ajustarZoom(0.2)" style="background: #333; color: #00ff88; border: 1px solid #00ff88; padding: 5px 12px; border-radius: 4px; cursor: pointer; font-weight: bold;">A +</button>
+            </div>
+
             <div id="letra-acordes" class="letra-box">Esperando canción...</div>
         </div>
 
         <div class="card admin-only" style="display:none;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; gap:10px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; gap:10px;">
                 <h4 style="margin:0;">📚 BIBLIOTECA</h4>
                 <input type="text" id="buscar-biblioteca" onkeyup="filtrarBiblioteca()" placeholder="🔍 Buscar canción..." style="width: 60%; margin:0;">
             </div>
