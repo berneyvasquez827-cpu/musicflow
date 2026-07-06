@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>MusicFlow PRO - Banda</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
     <style>
@@ -12,7 +12,7 @@
             color: #f1f5f9;
             font-family: system-ui, -apple-system, sans-serif;
             margin: 0;
-            padding: 20px;
+            padding: 12px;
         }
         .app-container {
             max-width: 1000px;
@@ -21,8 +21,8 @@
         .card {
             background: #1e293b;
             border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
+            padding: 16px;
+            margin-bottom: 16px;
             box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3);
             border: 1px solid #334155;
         }
@@ -35,22 +35,24 @@
             border: none;
             width: 100%;
             cursor: pointer;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
             font-size: 1rem;
         }
         .btn-top:hover { background: #4338ca; }
 
-        /* CÍRCULO ARMÓNICO ADAPTADO */
+        /* CÍRCULO ARMÓNICO ADAPTADO Y RESPONSIVO */
         .circle-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
         }
         .grid-grados {
             display: grid;
             grid-template-columns: repeat(8, 1fr);
-            gap: 8px;
+            gap: 6px;
             text-align: center;
             margin-bottom: 15px;
         }
@@ -58,36 +60,37 @@
             background-color: #334155;
             color: #cbd5e1;
             font-weight: bold;
-            padding: 8px 4px;
-            border-radius: 6px;
-            font-size: 0.85rem;
+            padding: 6px 2px;
+            border-radius: 4px;
+            font-size: 0.75rem;
         }
         .box-nota {
             background-color: #fef08a;
             color: #854d0e;
             font-weight: bold;
-            padding: 14px 4px;
+            padding: 10px 2px;
             border: 2px solid #facc15;
             border-radius: 6px;
-            margin-top: 6px;
-            font-size: 1.1rem;
+            margin-top: 4px;
+            font-size: 0.95rem;
         }
         .distribucion-box {
             background-color: #1e293b;
             border: 1px solid #475569;
             border-radius: 8px;
-            padding: 15px;
-            margin-top: 15px;
+            padding: 12px;
+            margin-top: 12px;
         }
         .badge-grado {
             background-color: #065f46;
             border: 1px solid #059669;
             color: #a7f3d0;
             border-radius: 8px;
-            padding: 8px;
+            padding: 6px;
             text-align: center;
-            min-width: 60px;
+            min-width: 45px;
             display: inline-block;
+            font-size: 0.85rem;
         }
 
         /* CONTROLES DEL CÍRCULO INDEPENDIENTE */
@@ -107,10 +110,10 @@
         }
         .btn-ctrl:hover { background: #475569; }
         .tono-master-display {
-            font-size: 1.6rem;
+            font-size: 1.4rem;
             font-weight: 900;
             color: #38bdf8;
-            min-width: 45px;
+            min-width: 35px;
             text-align: center;
         }
         select {
@@ -182,7 +185,7 @@
             background: #ef4444;
             color: white;
             border: none;
-            padding: 4px 10px;
+            padding: 6px 12px;
             border-radius: 4px;
             cursor: pointer;
         }
@@ -190,22 +193,56 @@
         /* VISOR MULTIMEDIA */
         .letra-box {
             background: #0f172a;
-            padding: 20px;
+            padding: 14px;
             border-radius: 8px;
             border: 1px solid #334155;
             white-space: pre-wrap;
-            line-height: 2;
+            line-height: 2.1;
             font-family: monospace;
+            overflow-x: auto;
         }
-        /* Resaltado plano para tus acordes registrados */
         .chord {
             background-color: #10b981;
             color: #0f172a;
             font-weight: bold;
-            padding: 2px 6px;
+            padding: 1px 4px;
             border-radius: 4px;
-            margin: 0 2px;
+            margin: 0 1px;
             display: inline-block;
+            font-size: 0.9em;
+        }
+
+        /* REGLAS ESPECÍFICAS PARA CELULARES */
+        @media (max-width: 600px) {
+            body { padding: 8px; }
+            .card { padding: 12px; }
+            h1 { font-size: 1.6rem !important; }
+            
+            .grid-grados {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 4px;
+            }
+            .header-grado { font-size: 0.7rem; padding: 4px 2px; }
+            .box-nota { font-size: 0.85rem; padding: 8px 2px; }
+            
+            .circle-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .transposer-flex {
+                width: 100%;
+                justify-content: space-between;
+            }
+            
+            .grid-selects {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+            .badge-grado {
+                min-width: 40px;
+                font-size: 0.75rem;
+                padding: 4px;
+            }
         }
     </style>
 </head>
@@ -214,14 +251,16 @@
     <div class="app-container">
         <button onclick="toggleAdmin()" class="btn-top">⚙️ MODO DIRECTOR / ADMINISTRADOR</button>
 
-        <!-- PANEL DEL CÍRCULO ARMÓNICO (INTERACTIVO E INDEPENDIENTE) -->
+        <!-- PANEL DEL CÍRCULO ARMÓNICO -->
         <div class="card">
             <div class="circle-header">
-                <h3 style="margin:0; font-size: 1.3rem;">🔄 Círculo Armónico Activado</h3>
+                <h3 style="margin:0; font-size: 1.1rem;">🔄 Círculo Armónico</h3>
                 <div class="transposer-flex">
-                    <button onclick="cambiarTono(-1)" class="btn-ctrl">-</button>
-                    <span id="tono-actual" class="tono-master-display">C</span>
-                    <button onclick="cambiarTono(1)" class="btn-ctrl">+</button>
+                    <div>
+                        <button onclick="cambiarTono(-1)" class="btn-ctrl">-</button>
+                        <span id="tono-actual" class="tono-master-display">C</span>
+                        <button onclick="cambiarTono(1)" class="btn-ctrl">+</button>
+                    </div>
                     <select id="select-modo-master" onchange="actualizarCirculoVisual()" class="inline-select">
                         <option value="Mayor">🔵 Mayor</option>
                         <option value="Menor">🔴 Menor</option>
@@ -230,7 +269,7 @@
             </div>
 
             <div class="grid-grados">
-                <div><div class="header-grado">Grado</div><div class="box-nota" id="lbl-master">C</div></div>
+                <div><div class="header-grado">Raíz</div><div class="box-nota" id="lbl-master">C</div></div>
                 <div><div class="header-grado" id="h-1">I</div><div class="box-nota" id="g-1">-</div></div>
                 <div><div class="header-grado" id="h-2">ii</div><div class="box-nota" id="g-2">-</div></div>
                 <div><div class="header-grado" id="h-3">iii</div><div class="box-nota" id="g-3">-</div></div>
@@ -241,8 +280,8 @@
             </div>
 
             <div class="distribucion-box">
-                <small style="font-weight: bold; display: block; margin-bottom: 8px; color: #94a3b8;">🎯 Distribución de Grados:</small>
-                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <small style="font-weight: bold; display: block; margin-bottom: 6px; color: #94a3b8;">🎯 Guía Rápida:</small>
+                <div style="display: flex; gap: 6px; flex-wrap: wrap;">
                     <div class="badge-grado"><small id="dh-1">I</small><br><b id="d-1">-</b></div>
                     <div class="badge-grado"><small id="dh-2">ii</small><br><b id="d-2">-</b></div>
                     <div class="badge-grado"><small id="dh-3">iii</small><br><b id="d-3">-</b></div>
@@ -254,7 +293,7 @@
             </div>
         </div>
 
-        <!-- FORMULARIO DE REGISTRO DIRECTO A TU REALTIME DATABASE -->
+        <!-- FORMULARIO DE REGISTRO DIRECTO -->
         <div class="card admin-only" id="panel-admin" style="display:none;">
             <h4 style="margin-top:0; color:#38bdf8;">📝 REGISTRAR O EDITAR CANCIÓN</h4>
             <form id="form-registro" onsubmit="event.preventDefault();">
@@ -268,7 +307,7 @@
                         <select id="input-tono-original"></select>
                     </div>
                     <div>
-                        <small style="color:#94a3b8;">Tono del Cantante (Se usará como Tono Asignado):</small>
+                        <small style="color:#94a3b8;">Tono del Cantante (Mayor o Menor):</small>
                         <select id="input-tono-cantante"></select>
                     </div>
                 </div>
@@ -278,38 +317,38 @@
                     <input type="file" id="input-pdf" accept="application/pdf" style="display:none;" onchange="importarPDF(this)">
                 </label>
 
-                <textarea id="input-cuerpo" rows="8" placeholder="Escribe la letra aquí de forma simple. Los acordes válidos se resaltarán en verde de forma estática."></textarea>
+                <textarea id="input-cuerpo" rows="8" placeholder="Escribe la letra aquí de forma simple."></textarea>
                 <button type="button" onclick="handleGuardar()" class="btn-save">GUARDAR CANCION 💾</button>
             </form>
         </div>
 
         <!-- ORDEN DE HOY -->
         <div class="card">
-            <h3 style="margin-top:0;">📋 ORDEN DE HOY</h3>
-            <div id="setlist-items">Sincronizando con setlist activo...</div>
+            <h3 style="margin-top:0; font-size: 1.2rem;">📋 ORDEN DE HOY</h3>
+            <div id="setlist-items">Sincronizando...</div>
         </div>
 
-        <!-- VISOR MULTIMEDIA ASÍNCRONO SIN TRANSPOSICIÓN -->
+        <!-- VISOR MULTIMEDIA -->
         <div class="card">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 10px;">
                 <div>
-                    <h1 id="titulo-cancion" style="margin:0; font-size: 2rem;">---</h1>
-                    <p style="margin: 5px 0; color:#94a3b8;">🎙️ <span id="info-cantante">--</span> | 🎼 TONO ASIGNADO: <span id="info-tono" style="color:#10b981; font-weight: bold;">--</span></p>
+                    <h1 id="titulo-cancion" style="margin:0; font-size: 1.8rem; word-break: break-word;">---</h1>
+                    <p style="margin: 4px 0; color:#94a3b8; font-size: 0.9rem;">🎙️ <span id="info-cantante">--</span> | 🎼 TONO ASIGNADO: <span id="info-tono" style="color:#10b981; font-weight: bold;">--</span></p>
                 </div>
                 <div style="display: flex; gap: 6px;">
                     <button onclick="ajustarZoom(-0.05)" class="btn-ctrl">A -</button>
                     <button onclick="ajustarZoom(0.05)" class="btn-ctrl">A +</button>
                 </div>
             </div>
-            <hr style="border-color: #334155; margin: 15px 0;">
-            <div id="letra-acordes" class="letra-box">Selecciona un tema del orden de hoy...</div>
+            <hr style="border-color: #334155; margin: 12px 0;">
+            <div id="letra-acordes" class="letra-box">Selecciona un tema...</div>
         </div>
 
-        <!-- BIBLIOTECA GENERAL COMPLETA -->
+        <!-- BIBLIOTECA GENERAL -->
         <div class="card admin-only" style="display:none;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
                 <h4 style="margin:0;">📚 BIBLIOTECA GENERAL</h4>
-                <input type="text" id="buscar-biblioteca" onkeyup="filtrarBiblioteca()" placeholder="🔍 Buscar canción..." style="width: 40%; margin:0;">
+                <input type="text" id="buscar-biblioteca" onkeyup="filtrarBiblioteca()" placeholder="🔍 Buscar..." style="width: 100%; max-width: 200px; margin:0;">
             </div>
             <div id="lista-catalogo"></div>
         </div>
@@ -327,12 +366,16 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        const escala = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+        // Escala extendida para soportar mapeo directo indexado de menores
+        const escala = [
+            'C','C#','D','D#','E','F','F#','G','G#','A','A#','B',
+            'Cm','C#m','Dm','D#m','Em','Fm','F#m','Gm','G#m','Am','A#m','Bm'
+        ];
+        
         let cancionesLocales = [];
         let zoomActual = 1.15;
         let notaMasterGlobal = 'C';
 
-        // DETECTOR Y RESALTADOR PLANO (Mantiene los acordes exactamente igual a como se registraron)
         function renderizarAcordesFijos(texto) {
             if (!texto) return "";
             const regex = /\b([A-G][#b]?)(m?7?M?4?2?v?(\/[A-G][#b]?)?)\b/g;
@@ -341,10 +384,11 @@
             });
         }
 
-        // CONTROL VISUAL DEL CÍRCULO ARMÓNICO POR GRADOS
         function calcularCirculoGrados(notaRaiz, modo) {
-            let indexRaiz = escala.indexOf(notaRaiz.replace('m', ''));
-            if (indexRaiz === -1) return;
+            // Limpia la 'm' para buscar la posición base en la escala
+            let notaLimpia = notaRaiz.replace('m', '');
+            let indexRaiz = escala.indexOf(notaLimpia);
+            if (indexRaiz === -1 || indexRaiz >= 12) return;
 
             const obtenerNota = (semitonos) => escala[(indexRaiz + semitonos) % 12];
             let circulo = {};
@@ -378,22 +422,24 @@
             calcularCirculoGrados(notaMasterGlobal, modo);
         }
 
-        // LISTENER EN TIEMPO REAL TOTALMENTE CONGELADO (FIJO SIN TRANSPOSICIÓN NI EN TEXTO NI EN ENCABEZADOS)
         db.ref('musica_activa').on('value', snap => {
             const d = snap.val(); if (!d || !d.cancion) return;
             const s = d.cancion;
             
-            // Forzamos a leer estrictamente el tonoBase original guardado, ignorando transiciones numéricas externas
             const tFijo = s.tonoBase !== undefined ? s.tonoBase : 0;
             
             document.getElementById('titulo-cancion').innerText = s.titulo;
             document.getElementById('info-cantante').innerText = s.cantante || "--";
-            
-            // El TONO ASIGNADO se mantiene estático según la estructura de la base de datos
             document.getElementById('info-tono').innerText = escala[tFijo] || "--";
             
-            // El círculo armónico toma el valor activo para mantener la guía manual si se requiere cambiar arriba
             const tCirculo = d.tono !== undefined ? d.tono : tFijo;
+            // Si la canción seleccionada es menor, configuramos automáticamente el visor del círculo en "Menor"
+            if(escala[tFijo] && escala[tFijo].includes('m')) {
+                document.getElementById('select-modo-master').value = 'Menor';
+            } else if (d.tono === undefined) {
+                document.getElementById('select-modo-master').value = 'Mayor';
+            }
+            
             notaMasterGlobal = escala[tCirculo] || "C";
             document.getElementById('tono-actual').innerText = notaMasterGlobal;
             
@@ -404,7 +450,6 @@
             actualizarCirculoVisual();
         });
 
-        // MANEJADOR DE ZOOM SIMPLE
         function ajustarZoom(v) {
             zoomActual += v;
             if (zoomActual < 0.5) zoomActual = 0.5;
@@ -412,7 +457,6 @@
             if(visor) visor.style.fontSize = zoomActual + "rem";
         }
 
-        // EL BOTÓN DEL CÍRCULO ARMÓNICO SOLO CAMBIA EL PANEL SUPERIOR, SIN ALTERAR EL VISOR
         function cambiarTono(v) { 
             db.ref('musica_activa/tono').transaction(t => {
                 if (t === null || t === undefined) return 0;
@@ -420,7 +464,6 @@
             }); 
         }
 
-        // GUARDADO DE ENTRADA PLANO EN REALTIME DATABASE
         async function handleGuardar() {
             const id = document.getElementById('edit-id').value;
             const song = {
@@ -441,7 +484,6 @@
             document.getElementById('edit-id').value = "";
         }
 
-        // SINCRO BIBLIOTECA
         db.ref('catalogo').on('value', snap => {
             cancionesLocales = [];
             snap.forEach(i => { let c = i.val(); c.id = i.key; cancionesLocales.push(c); });
@@ -456,14 +498,14 @@
             cancionesLocales.forEach(s => {
                 if (s.titulo.toLowerCase().includes(txt)) {
                     const item = document.createElement('div');
-                    item.style = "display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #334155; background: #0f172a; margin-bottom: 4px; border-radius: 4px;";
+                    item.style = "display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #334155; background: #0f172a; margin-bottom: 4px; border-radius: 4px; font-size: 0.9rem;";
                     
                     item.innerHTML = `
-                        <span style="font-weight: bold; flex-grow: 1;">${s.titulo} <small style="color:#64748b; font-weight:normal;">(${escala[s.tonoBase]})</small></span>
-                        <div style="display: flex; gap: 8px;">
-                            <button onclick='agregarAlSetlist("${s.id}")'>➕</button>
-                            <button onclick='editarCancion("${s.id}")'>✏️</button>
-                            <button onclick='eliminarCancion("${s.id}")'>🗑️</button>
+                        <span style="font-weight: bold; flex-grow: 1;">${s.titulo} <small style="color:#64748b;">(${escala[s.tonoBase] || 'C'})</small></span>
+                        <div style="display: flex; gap: 4px;">
+                            <button onclick='agregarAlSetlist("${s.id}")' style="background:none; border:1px solid #475569; color:white; padding:4px 8px; border-radius:4px;">➕</button>
+                            <button onclick='editarCancion("${s.id}")' style="background:none; border:1px solid #475569; color:white; padding:4px 8px; border-radius:4px;">✏️</button>
+                            <button onclick='eliminarCancion("${s.id}")' style="background:none; border:1px solid #475569; color:white; padding:4px 8px; border-radius:4px;">🗑️</button>
                         </div>`;
                     list.appendChild(item);
                 }
@@ -484,6 +526,7 @@
                 document.getElementById('input-tono-original').value = s.tonoOriginalRegistrado || 0;
                 document.getElementById('input-tono-cantante').value = s.tonoBase || 0;
                 document.getElementById('input-cuerpo').value = s.cuerpo;
+                document.getElementById('panel-admin').style.display = 'block';
                 document.getElementById('panel-admin').scrollIntoView({ behavior: 'smooth' });
             }
         }
@@ -494,7 +537,6 @@
             }
         }
 
-        // ENLACE DIRECTO DEL SETLIST AL VISOR
         db.ref('setlist').on('value', snap => {
             const cont = document.getElementById('setlist-items');
             cont.innerHTML = "";
@@ -502,15 +544,14 @@
                 const s = i.val();
                 const div = document.createElement('div');
                 div.className = "item-setlist";
-                div.innerHTML = `<span>🎵 <b>${s.titulo}</b> <small style="color:#a7f3d0;">(${escala[s.tonoBase]})</small></span> <button onclick="db.ref('setlist/${i.key}').remove()">✖</button>`;
+                div.innerHTML = `<span>🎵 <b>${s.titulo}</b> <small style="color:#a7f3d0;">(${escala[s.tonoBase] || 'C'})</small></span> <button onclick="db.ref('setlist/${i.key}').remove()">✖</button>`;
                 div.onclick = (e) => { 
-                    if(e.target.tagName !== 'BUTTON') db.ref('musica_activa').set({ cancion: s, tono: s.tonoBase }); 
+                    if(e.target.tagName !== 'BUTTON') db.ref('musica_activa').set({ cancion: s, tono: s.tonoBase % 12 }); 
                 };
                 cont.appendChild(div);
             });
         });
 
-        // PARSER INTERNO DESDE PDF
         async function importarPDF(input) {
             const file = input.files[0]; if (!file) return;
             const reader = new FileReader();
@@ -539,6 +580,8 @@
         window.onload = () => {
             const s1 = document.getElementById('input-tono-original');
             const s2 = document.getElementById('input-tono-cantante');
+            
+            // Carga limpia de la escala completa con soporte explícito para menores
             escala.forEach((n, i) => {
                 s1.innerHTML += `<option value="${i}">${n}</option>`;
                 s2.innerHTML += `<option value="${i}">${n}</option>`;
