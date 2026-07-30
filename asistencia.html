@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Asistencia - Devocionales y Ayunos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-900 text-slate-100 font-sans min-h-screen p-4 flex justify-center items-center">
+
+    <div class="max-w-md w-full bg-slate-800 border border-slate-700 p-6 rounded-2xl shadow-2xl">
+        
+        <div class="text-center mb-6">
+            <h1 class="text-2xl font-extrabold text-indigo-400">📖 Toma de Asistencia</h1>
+            <p class="text-xs text-slate-400 mt-1">Devocionales Matutinos y Ayunos</p>
+        </div>
+
+        <form id="form-asistencia" onsubmit="registrarAsistencia(event)" class="space-y-4">
+            
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">Actividad</label>
+                    <select id="actividad" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:ring-2 focus:ring-indigo-500">
+                        <option value="Devocional">🌅 Devocional</option>
+                        <option value="Ayuno">🙏 Ayuno</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">Fecha</label>
+                    <input type="date" id="fecha" required class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:ring-2 focus:ring-indigo-500">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs text-slate-400 mb-1">Selecciona tu Nombre *</label>
+                <select id="select-hermano" required class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-sm text-white focus:ring-2 focus:ring-indigo-500">
+                    <option value="">-- Cargando lista de personal... --</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-xs text-slate-400 mb-2">¿Asistirás a la actividad? *</label>
+                <div class="grid grid-cols-2 gap-3">
+                    <label class="cursor-pointer">
+                        <input type="radio" name="estado" value="Presente" checked onclick="toggleMotivo()" class="peer hidden">
+                        <div class="p-3 text-center text-xs font-bold rounded-lg bg-slate-900 border border-slate-700 text-slate-400 peer-checked:bg-emerald-600 peer-checked:text-white peer-checked:border-emerald-500 transition">
+                            ✅ Asistiré / Presente
+                        </div>
+                    </label>
+
+                    <label class="cursor-pointer">
+                        <input type="radio" name="estado" value="Excusa" onclick="toggleMotivo()" class="peer hidden">
+                        <div class="p-3 text-center text-xs font-bold rounded-lg bg-slate-900 border border-slate-700 text-slate-400 peer-checked:bg-amber-600 peer-checked:text-white peer-checked:border-amber-500 transition">
+                            🟡 No podré asistir
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <div id="bloque-motivo" class="hidden">
+                <label class="block text-xs text-amber-400 mb-1">Motivo / Razón de Inasistencia *</label>
+                <textarea id="motivo" rows="3" placeholder="Escribe aquí por qué no podrás asistir..." class="w-full bg-slate-900 border border-amber-500/50 rounded-lg p-3 text-sm text-white focus:ring-2 focus:ring-amber-500"></textarea>
+            </div>
+
+            <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl shadow-lg transition">
+                🚀 GUARDAR REGISTRO
+            </button>
+        </form>
+
+        <div id="mensaje-exito" class="hidden mt-4 p-3 bg-emerald-900/50 border border-emerald-500 text-emerald-300 text-center text-sm rounded-lg">
+            ¡Tu reporte ha sido registrado con éxito!
+        </div>
+
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyCOYRDnksd3HmiATlMUdAG_uF2MZMi7qVE",
+            databaseURL: "https://musicflow-banda-default-rtdb.firebaseio.com"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        let listaHermanos = [];
+
+        // Corrección de fecha por defecto
+        document.getElementById('fecha').value = new Date().toISOString().split('T')[0];
+
+        db.ref('hermanos').on('value', snap => {
+            const select = document.getElementById('select-hermano');
+            select.innerHTML = '<option value="">-- Selecciona tu nombre --</option>';
+            listaHermanos = [];
+
+            if(snap.exists()) {
+                snap.forEach(child => {
+                    const h = child.val();
+                    h.id = child.key;
+                    listaHermanos.push(h);
+                    select.innerHTML += `<option value="${h.id}">${h.nombre}</option>`;
+                });
+            } else {
+                select.innerHTML = '<option value="">No hay personal registrado aún</option>';
+            }
+        });
+
+        function toggleMotivo() {
+            const estado = document.querySelector('input[name="estado"]:checked').value;
+            const bloque = document.getElementById('bloque-motivo');
+            if (estado === 'Excusa') {
+                bloque.classList.remove('hidden');
+            } else {
+                bloque.classList.add('hidden');
+                document.getElementById('motivo').value = "";
+            }
+        }
+
+        function registrarAsistencia(e) {
+            e.preventDefault();
+
+            const hermanoId = document.getElementById('select-hermano').value;
+            const actividad = document.getElementById('actividad').value;
+            const fecha = document.getElementById('fecha').value;
+            const estado = document.querySelector('input[name="estado"]:checked').value;
+            const motivo = document.getElementById('motivo').value.trim();
+
+            if (!hermanoId) {
+                alert("Por favor selecciona tu nombre.");
+                return;
+            }
+
+            if (estado === 'Excusa' && !motivo) {
+                alert("Debes escribir el motivo por el cual no podrás asistir.");
+                return;
+            }
+
+            const hermanoObj = listaHermanos.find(h => h.id === hermanoId);
+            const idSesion = `${fecha}_${actividad}`;
+
+            db.ref(`asistencias/${idSesion}/detalles/${hermanoId}`).set({
+                nombre: hermanoObj.nombre,
+                estado: estado,
+                motivo: estado === 'Excusa' ? motivo : "Asistió normalmente"
+            }).then(() => {
+                const msg = document.getElementById('mensaje-exito');
+                msg.classList.remove('hidden');
+                setTimeout(() => msg.classList.add('hidden'), 3000);
+                document.getElementById('form-asistencia').reset();
+                document.getElementById('fecha').value = fecha;
+                toggleMotivo();
+            }).catch(err => {
+                alert("Error al guardar en Firebase: " + err.message);
+            });
+        }
+    </script>
+</body>
+</html>
