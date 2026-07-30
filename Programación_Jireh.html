@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jehova Jireh Music - Consola Inteligente Cloud</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body class="bg-slate-50 font-sans text-slate-800" x-data="appMinisterio">
+
+    <header class="bg-slate-900 text-white p-6 shadow-xl border-b-4 border-red-600">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div>
+                <h1 class="text-3xl font-extrabold tracking-tight flex items-center gap-2">
+                    <i class="fa-solid fa-music text-red-500"></i> JEHOVA JIREH MUSIC
+                </h1>
+                <p class="text-slate-400 text-sm mt-1 font-medium">Consola de Programación con Switch Manual de Festivos</p>
+            </div>
+
+            <div class="flex items-center gap-2 bg-slate-800 p-2 rounded-xl border border-slate-700">
+                <i class="fa-solid fa-calendar text-red-500 px-2"></i>
+                <select x-model="filtroAno" @change="calcularCalendarioMes(false)" class="bg-slate-900 text-white p-1.5 rounded-lg text-sm font-bold border-none focus:outline-none">
+                    <option value="2026">2026</option>
+                    <option value="2027">2027</option>
+                </select>
+                <select x-model="filtroMes" @change="calcularCalendarioMes(false)" class="bg-slate-900 text-white p-1.5 rounded-lg text-sm font-bold border-none focus:outline-none">
+                    <option value="01">Enero</option>
+                    <option value="02">Febrero</option>
+                    <option value="03">Marzo</option>
+                    <option value="04">Abril</option>
+                    <option value="05">Mayo</option>
+                    <option value="06">Junio</option>
+                    <option value="07">Julio</option>
+                    <option value="08">Agosto</option>
+                    <option value="09">Septiembre</option>
+                    <option value="10">Octubre</option>
+                    <option value="11">Noviembre</option>
+                    <option value="12">Diciembre</option>
+                </select>
+            </div>
+
+            <div class="flex gap-2 bg-slate-800 p-1 rounded-xl">
+                <button @click="vista = 'cronograma'" :class="vista === 'cronograma' ? 'bg-red-600 text-white shadow' : 'text-slate-400 hover:text-white'" class="px-4 py-2 rounded-lg font-bold transition text-sm">
+                    <i class="fa-solid fa-calendar-days mr-1"></i> Cronograma
+                </button>
+                <button @click="vista = 'integrantes'" :class="vista === 'integrantes' ? 'bg-red-600 text-white shadow' : 'text-slate-400 hover:text-white'" class="px-4 py-2 rounded-lg font-bold transition text-sm">
+                    <i class="fa-solid fa-users mr-1"></i> Integrantes
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 py-8">
+
+        <!-- Sección Cronograma -->
+        <div x-show="vista === 'cronograma'" class="space-y-8" x-transition>
+
+            <!-- Switch de Control Manual de Festivos -->
+            <div class="bg-gradient-to-r from-red-50 to-amber-50 p-4 rounded-xl border border-red-200 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div class="flex items-center gap-3">
+                    <div class="p-3 bg-red-600 text-white rounded-xl shadow-md">
+                        <i class="fa-solid fa-triangle-exclamation text-xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-slate-800 text-sm sm:text-base">Control Manual de Festivos Ministerial</h3>
+                        <p class="text-xs text-slate-500 font-medium">¿El lunes de oración de la segunda semana es festivo? ¡Activa el switch para pasarlo al martes!</p>
+                    </div>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer select-none">
+                    <input type="checkbox" x-model="esLunesOracionFestivo" @change="alternarFestivoManual()" class="sr-only peer">
+                    <div class="w-14 h-7 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-red-600"></div>
+                    <span class="ms-3 text-sm font-bold text-slate-700" x-text="esLunesOracionFestivo ? '¡SÍ, ES FESTIVO!' : 'NO ES FESTIVO'"></span>
+                </label>
+            </div>
+
+            <!-- Asignador de Turnos -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <h2 class="text-xl font-bold text-slate-800 mb-1 flex items-center gap-2">
+                    <i class="fa-solid fa-sliders text-red-600"></i> Asignador de Turnos para <span class="text-red-600" x-text="obtenerNombreMesYId()"></span>
+                </h2>
+                <p class="text-xs text-slate-500 mb-4">El sistema calcula la Oración, el Ayuno, los Viernes, Domingos y Devocionales de los Miércoles automáticamente.</p>
+
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Servicio y Fecha Calculada</label>
+                        <select x-model="formAsignacion.fechaId" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-medium focus:ring-2 focus:ring-red-500 text-sm focus:outline-none">
+                             <optgroup label="Asignaciones Mensuales Especiales">
+                                <option value="aseo_altar" x-text="`Aseo del Altar — ${labelAseoAltar}`"></option>
+                                <option value="oracion" x-text="esLunesOracionFestivo ? `Día ${fechaOracionCalculada} — Servicio de Oración (Martes)` : `Día ${fechaOracionCalculada} — Servicio de Oración (Lunes)`"></option>
+                                <option value="ayuno" x-text="`Día ${fechaAyunoCalculada} — Ayuno Grupal Dominical`"></option>
+                            </optgroup>
+                            <optgroup label="Devocionales (Miércoles)">
+                                <template x-for="(fecha, index) in fechasMiercoles">
+                                    <option :value="'mie_g' + (index+1)" x-text="`Miércoles ${fecha} — Devocional`"></option>
+                                </template>
+                            </optgroup>
+                            <optgroup label="Viernes de Alabanza">
+                                <template x-for="(fecha, index) in fechasViernes">
+                                    <option :value="'vie_g' + (index+1)" x-text="`Viernes ${fecha} — Grupo ${index+1}`"></option>
+                                </template>
+                            </optgroup>
+                            <optgroup label="Escuela Dominical">
+                                <template x-for="(fecha, index) in fechasDomingos">
+                                    <option :value="'dom_g' + (index+1)" x-text="`Domingo ${fecha} — Grupo ${index+1}`"></option>
+                                </template>
+                            </optgroup>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Rol / Tarea</label>
+                        <select x-model="formAsignacion.rol" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-medium focus:ring-2 focus:ring-red-500 text-sm focus:outline-none">
+                            <!-- Roles de Aseo del Altar (2 Responsables) -->
+                            <template x-if="formAsignacion.fechaId === 'aseo_altar'">
+                                <optgroup label="Aseo del Altar">
+                                    <option value="Responsable 1">Responsable 1</option>
+                                    <option value="Responsable 2">Responsable 2</option>
+                                </optgroup>
+                            </template>
+                            <!-- Roles Generales -->
+                            <template x-if="formAsignacion.fechaId !== 'aseo_altar'">
+                                <optgroup label="Roles Generales">
+                                    <option value="Responsable Principal">Responsable Principal</option>
+                                    <option value="Coordinación">Coordinación</option>
+                                    <option value="Prédica">Prédica / Palabra</option>
+                                    <option value="Voz Principal 1">Voz Principal 1</option>
+                                    <option value="Voz Principal 2">Voz Principal 2</option>
+                                    <option value="Coro 1">Coro 1 / Coros</option>
+                                    <option value="Coro 2">Coro 2</option>
+                                    <option value="Coro 3">Coro 3</option>
+                                    <option value="1er Pianista">1er Pianista / Pianista</option>
+                                    <option value="2do Pianista">2do Pianista</option>
+                                    <option value="Guitarra Electrica">Guitarra Eléctrica</option>
+                                    <option value="Bajo">Bajo</option>
+                                    <option value="Bateria">Batería</option>
+                                    <option value="Percusion Menor">Percusión Menor / Percusión</option>
+                                </optgroup>
+                            </template>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Adorador Asignado</label>
+                        <select x-model="formAsignacion.integrante" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-medium focus:ring-2 focus:ring-red-500 text-sm focus:outline-none">
+                            <option value="">-- Seleccionar Integrante --</option>
+                            <template x-for="integ in integrantes">
+                                <option :value="integ.nombre" x-text="integ.nombre"></option>
+                            </template>
+                        </select>
+                    </div>
+                    <div class="flex items-end gap-2">
+                        <button @click="guardarAsignacion()" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold p-3 rounded-xl shadow transition flex items-center justify-center gap-2 text-sm">
+                            <i class="fa-solid fa-cloud-arrow-up"></i> Registrar
+                        </button>
+                        <button @click="limpiarAsignacion()" class="bg-slate-300 hover:bg-slate-400 text-slate-800 font-bold p-3 rounded-xl shadow transition text-sm" title="Limpiar selección">
+                            <i class="fa-solid fa-eraser"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Grid de Bloques Especiales: Aseo, Oración y Ayuno -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+                <!-- Aseo del Altar (Primer Domingo del Mes) -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="bg-amber-600 text-white p-4 font-bold flex justify-between items-center">
+                        <span><i class="fa-solid fa-broom mr-2"></i> Aseo del Altar</span>
+                        <span class="bg-amber-800 text-xs px-3 py-1 rounded-full font-bold" x-text="labelAseoAltar"></span>
+                    </div>
+                    <div class="p-4 space-y-3">
+                        <div class="flex justify-between items-center border-b pb-2 text-sm">
+                            <span class="text-slate-500 font-semibold">Responsable 1</span>
+                            <span class="font-bold text-slate-900 flex items-center gap-2">
+                                <span x-text="getValorDinamico('aseo_altar', 'Responsable 1')"></span>
+                                <button @click="abrirEditor('aseo_altar', 'Responsable 1')" class="text-blue-500 hover:text-blue-700 text-xs" title="Editar">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+                                <button @click="eliminarAsignacion('aseo_altar', 'Responsable 1')" class="text-red-500 hover:text-red-700 text-xs" title="Eliminar">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                            </span>
+                        </div>
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="text-slate-500 font-semibold">Responsable 2</span>
+                            <span class="font-bold text-slate-900 flex items-center gap-2">
+                                <span x-text="getValorDinamico('aseo_altar', 'Responsable 2')"></span>
+                                <button @click="abrirEditor('aseo_altar', 'Responsable 2')" class="text-blue-500 hover:text-blue-700 text-xs" title="Editar">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+                                <button @click="eliminarAsignacion('aseo_altar', 'Responsable 2')" class="text-red-500 hover:text-red-700 text-xs" title="Eliminar">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Servicio de Oración (Segundo Lunes o Martes si es Festivo) -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="bg-slate-800 text-white p-4 font-bold flex justify-between items-center">
+                        <span><i class="fa-solid fa-hands-praying text-red-500 mr-2"></i> Servicio de Oración</span>
+                        <span class="bg-red-600 text-xs px-3 py-1 rounded-full font-bold" x-text="labelOracionCalculada"></span>
+                    </div>
+                    <div class="p-4 space-y-3">
+                        <div class="flex justify-between items-center border-b pb-2 text-sm">
+                            <span class="text-slate-500">Coordinación</span>
+                            <span class="font-bold text-slate-900 flex items-center gap-2">
+                                <span x-text="getValorDinamico('oracion', 'Coordinación')"></span>
+                                <button @click="abrirEditor('oracion', 'Coordinación')" class="text-blue-500 hover:text-blue-700 text-xs" title="Editar">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+                                <button @click="eliminarAsignacion('oracion', 'Coordinación')" class="text-red-500 hover:text-red-700 text-xs" title="Eliminar">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                            </span>
+                        </div>
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="text-slate-500">Prédica</span>
+                            <span class="font-bold text-slate-900 flex items-center gap-2">
+                                <span x-text="getValorDinamico('oracion', 'Prédica')"></span>
+                                <button @click="abrirEditor('oracion', 'Prédica')" class="text-blue-500 hover:text-blue-700 text-xs" title="Editar">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+                                <button @click="eliminarAsignacion('oracion', 'Prédica')" class="text-red-500 hover:text-red-700 text-xs" title="Eliminar">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ayuno Grupal Mensual (Tercer Domingo) -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="bg-slate-800 text-white p-4 font-bold flex justify-between items-center">
+                        <span><i class="fa-solid fa-heart text-blue-500 mr-2"></i> Ayuno Grupal Mensual</span>
+                        <span class="bg-blue-600 text-xs px-3 py-1 rounded-full font-bold" x-text="labelAyunoCalculada"></span>
+                    </div>
+                    <div class="p-4 space-y-3">
+                        <div class="flex justify-between items-center border-b pb-2 text-sm">
+                            <span class="text-slate-500">Coordinación</span>
+                            <span class="font-bold text-slate-900 flex items-center gap-2">
+                                <span x-text="getValorDinamico('ayuno', 'Coordinación')"></span>
+                                <button @click="abrirEditor('ayuno', 'Coordinación')" class="text-blue-500 hover:text-blue-700 text-xs" title="Editar">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+                                <button @click="eliminarAsignacion('ayuno', 'Coordinación')" class="text-red-500 hover:text-red-700 text-xs" title="Eliminar">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                            </span>
+                        </div>
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="text-slate-500">Prédica</span>
+                            <span class="font-bold text-slate-900 flex items-center gap-2">
+                                <span x-text="getValorDinamico('ayuno', 'Prédica')"></span>
+                                <button @click="abrirEditor('ayuno', 'Prédica')" class="text-blue-500 hover:text-blue-700 text-xs" title="Editar">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+                                <button @click="eliminarAsignacion('ayuno', 'Prédica')" class="text-red-500 hover:text-red-700 text-xs" title="Eliminar">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Devocionales (Miércoles) -->
+            <div class="bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden">
+                <div class="bg-gradient-to-r from-emerald-900 to-emerald-800 p-4 text-white flex justify-between items-center">
+                    <h3 class="font-bold text-base flex items-center gap-2"><i class="fa-solid fa-calendar-day"></i> Devocionales de la Semana — Días Miércoles</h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse text-sm">
+                        <thead class="bg-slate-100 text-slate-600 uppercase text-xs font-bold border-b">
+                            <tr>
+                                <th class="p-3">Rol Ministerial</th>
+                                <template x-for="(fecha, index) in fechasMiercoles">
+                                    <th class="p-3 text-center" :class="index % 2 === 0 ? 'bg-emerald-50 text-emerald-950 font-extrabold' : ''" x-text="`Mié ${fecha}/${filtroMes}`"></th>
+                                </template>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-200 font-medium">
+                            <template x-for="rol in ['Coordinación', 'Prédica']">
+                                <tr class="hover:bg-slate-50">
+                                    <td class="p-3 font-bold text-slate-900" x-text="rol"></td>
+                                    <template x-for="(fecha, index) in fechasMiercoles">
+                                        <td class="text-center p-3" :class="index % 2 === 0 ? 'bg-emerald-50/20' : ''">
+                                            <span class="flex items-center justify-center gap-1">
+                                                <span x-text="getValorDinamico('mie_g' + (index+1), rol)"></span>
+                                                <button @click="abrirEditor('mie_g' + (index+1), rol)" class="text-blue-500 hover:text-blue-700 text-xs" title="Editar">
+                                                    <i class="fa-solid fa-pen"></i>
+                                                </button>
+                                                <button @click="eliminarAsignacion('mie_g' + (index+1), rol)" class="text-red-500 hover:text-red-700 text-xs" title="Eliminar">
+                                                    <i class="fa-solid fa-trash-can"></i>
+                                                </button>
+                                            </span>
+                                        </td>
+                                    </template>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Viernes de Alabanza -->
+            <div class="bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden">
+                <div class="bg-gradient-to-r from-purple-900 to-purple-800 p-4 text-white">
+                    <h3 class="font-bold text-base flex items-center gap-2"><i class="fa-solid fa-moon"></i> Ministración de Alabanzas — Días Viernes</h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse text-sm">
+                        <thead class="bg-slate-100 text-slate-600 uppercase text-xs font-bold border-b">
+                            <tr>
+                                <th class="p-3">Asignación</th>
+                                <template x-for="(fecha, index) in fechasViernes">
+                                    <th class="p-3 text-center" :class="index % 2 === 0 ? 'bg-purple-50 text-purple-950 font-extrabold' : ''" x-text="`G${index+1} (${fecha}-${filtroMes})`"></th>
+                                </template>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-200 font-medium">
+                            <template x-for="rol in ['Voz Principal 1', 'Voz Principal 2', 'Coro 1', '1er Pianista', 'Percusion Menor']">
+                                <tr class="hover:bg-slate-50">
+                                    <td class="p-3 font-bold text-slate-900" x-text="rol"></td>
+                                    <template x-for="(fecha, index) in fechasViernes">
+                                        <td class="text-center p-3" :class="index % 2 === 0 ? 'bg-purple-50/20' : ''">
+                                            <span class="flex items-center justify-center gap-1">
+                                                <span x-text="getValorDinamico('vie_g' + (index+1), rol)"></span>
+                                                <button @click="abrirEditor('vie_g' + (index+1), rol)" class="text-blue-500 hover:text-blue-700 text-xs" title="Editar">
+                                                    <i class="fa-solid fa-pen"></i>
+                                                </button>
+                                                <button @click="eliminarAsignacion('vie_g' + (index+1), rol)" class="text-red-500 hover:text-red-700 text-xs" title="Eliminar">
+                                                    <i class="fa-solid fa-trash-can"></i>
+                                                </button>
+                                            </span>
+                                        </td>
+                                    </template>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Escuela Dominical -->
+            <div class="bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden">
+                <div class="bg-gradient-to-r from-sky-900 to-sky-800 p-4 text-white">
+                    <h3 class="font-bold text-base flex items-center gap-2"><i class="fa-solid fa-church"></i> Ministración de Alabanzas — Escuela Dominical</h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse text-sm">
+                        <thead class="bg-slate-100 text-slate-600 uppercase text-xs font-bold border-b">
+                            <tr>
+                                <th class="p-3">Rol del Servicio</th>
+                                <template x-for="(fecha, index) in fechasDomingos">
+                                    <th class="p-3 text-center" :class="index % 2 === 0 ? 'bg-sky-50 text-sky-950 font-extrabold' : ''" x-text="`G${index+1} (${fecha}-${filtroMes})`"></th>
+                                </template>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-200 font-medium">
+                            <template x-for="rol in ['Voz Principal 1', 'Voz Principal 2', 'Coro 1', 'Coro 2', 'Coro 3', '1er Pianista', '2do Pianista', 'Guitarra Electrica', 'Bajo', 'Bateria', 'Percusion Menor']">
+                                <tr class="border-b hover:bg-slate-50">
+                                    <td class="p-3 font-bold text-slate-900" x-text="rol"></td>
+                                    <template x-for="(fecha, index) in fechasDomingos">
+                                        <td class="p-3 text-center" :class="index % 2 === 0 ? 'bg-sky-50/30' : ''">
+                                            <span class="flex items-center justify-center gap-1">
+                                                <span x-text="getValorDinamico('dom_g' + (index+1), rol)"></span>
+                                                <button @click="abrirEditor('dom_g' + (index+1), rol)" class="text-blue-500 hover:text-blue-700 text-xs" title="Editar">
+                                                    <i class="fa-solid fa-pen"></i>
+                                                </button>
+                                                <button @click="eliminarAsignacion('dom_g' + (index+1), rol)" class="text-red-500 hover:text-red-700 text-xs" title="Eliminar">
+                                                    <i class="fa-solid fa-trash-can"></i>
+                                                </button>
+                                            </span>
+                                        </td>
+                                    </template>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sección Integrantes -->
+        <div x-show="vista === 'integrantes'" class="grid grid-cols-1 lg:grid-cols-3 gap-8" x-transition>
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 h-fit">
+                <h2 class="text-xl font-bold text-slate-800 mb-1"><i class="fa-solid fa-user-plus text-red-600"></i> Registrar Adorador</h2>
+                <div class="space-y-4 mt-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Nombre Completo</label>
+                        <input type="text" x-model="nuevoIntegrante.nombre" class="w-full p-3 border border-slate-200 rounded-xl text-sm focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Línea Principal</label>
+                        <select x-model="nuevoIntegrante.rolBase" class="w-full p-3 border border-slate-200 rounded-xl text-sm focus:outline-none">
+                            <option value="Voz Principal">Voz Principal</option>
+                            <option value="Coros">Coros</option>
+                            <option value="Pianista">Pianista</option>
+                            <option value="Guitarra Electrica">Guitarra Eléctrica</option>
+                            <option value="Bajo">Bajo</option>
+                            <option value="Bateria">Batería</option>
+                            <option value="Percusión">Percusión</option>
+                        </select>
+                    </div>
+                    <button @click="agregarIntegrante()" class="w-full bg-slate-900 text-white font-bold p-3 rounded-xl text-sm">Registrar Servidor</button>
+                </div>
+            </div>
+            <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <h2 class="text-xl font-bold text-slate-800 mb-4"><i class="fa-solid fa-users text-blue-600"></i> Control General</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-slate-50 text-slate-500 uppercase text-xs font-bold">
+                            <tr class="border-b">
+                                <th class="p-3">Nombre</th>
+                                <th class="p-3">Línea</th>
+                                <th class="p-3 text-center">Asignaciones en este mes</th>
+                                <th class="p-3 text-center">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template x-for="item in integrantes">
+                                <tr class="border-b hover:bg-slate-50">
+                                    <td class="p-3 font-bold text-slate-900" x-text="item.nombre"></td>
+                                    <td class="p-3 text-slate-500" x-text="item.rolBase"></td>
+                                    <td class="p-3 text-center">
+                                        <span class="bg-amber-100 text-amber-800 px-3 py-1 rounded-full font-extrabold text-xs" x-text="calcularServiciosMes(item.nombre) + ' turnos'"></span>
+                                    </td>
+                                    <td class="p-3 text-center">
+                                        <button @click="eliminarIntegrante(item.id || item.nombre)" class="text-red-500"><i class="fa-solid fa-user-minus"></i></button>
+                                    </td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal de Edición -->
+        <div x-show="modalAbierto" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50" x-transition>
+            <div class="bg-white rounded-2xl p-6 max-w-md w-full mx-4 shadow-2xl">
+                <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-pen-to-square text-blue-600"></i>
+                    Editar Asignación
+                </h3>
+                <p class="text-sm text-slate-600 mb-4">
+                    <span class="font-bold">Servicio:</span> <span x-text="editorData.bloqueId"></span><br>
+                    <span class="font-bold">Rol:</span> <span x-text="editorData.rol"></span>
+                </p>
+                <div class="mb-4">
+                    <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Seleccionar Adorador</label>
+                    <select x-model="editorData.nuevoValor" class="w-full p-3 border border-slate-200 rounded-xl text-sm focus:outline-none">
+                        <option value="">— Ninguno (eliminar)</option>
+                        <template x-for="integ in integrantes">
+                            <option :value="integ.nombre" x-text="integ.nombre"></option>
+                        </template>
+                    </select>
+                </div>
+                <div class="flex gap-3">
+                    <button @click="guardarEdicion()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold p-3 rounded-xl transition">
+                        <i class="fa-solid fa-check mr-2"></i> Guardar
+                    </button>
+                    <button @click="modalAbierto = false" class="flex-1 bg-slate-300 hover:bg-slate-400 text-slate-800 font-bold p-3 rounded-xl transition">
+                        Cancelar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-slate-800 text-slate-400 text-center py-6 mt-12 text-xs">
+        <p>© 2026 Jehova Jireh Music. Panel Multi-Mes Completo por Berney.</p>
+    </footer>
+
+    <script>
+        window.firebaseModuloActivo = false;
+
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('appMinisterio', () => ({
+                vista: 'cronograma',
+                usandoModoLocal: true,
+                filtroAno: '2026',
+                filtroMes: '07',
+                mesUltimaConsulta: '07',
+                fechasMiercoles: [],
+                fechasViernes: [],
+                fechasDomingos: [],
+                fechaOracionCalculada: '',
+                labelOracionCalculada: '',
+                fechaAyunoCalculada: '',
+                labelAyunoCalculada: '',
+                fechaAseoAltar: '',
+                labelAseoAltar: '',
+                esLunesOracionFestivo: false,
+                integrantes: [],
+                cronogramaDatosGlobal: {},
+                nuevoIntegrante: { nombre: '', rolBase: 'Voz Principal' },
+                formAsignacion: { fechaId: 'oracion', rol: 'Coordinación', integrante: '' },
+                modalAbierto: false,
+                editorData: { bloqueId: '', rol: '', nuevoValor: '' },
+
+                init() {
+                    this.calcularCalendarioMes(false);
+                    let intento = 0;
+                    let checkCloud = setInterval(() => {
+                        if (window.firebaseModuloActivo && window.conectarSuscripcionesCloud) {
+                            this.usandoModoLocal = false;
+                            window.conectarSuscripcionesCloud(this);
+                            clearInterval(checkCloud);
+                        }
+                        intento++;
+                        if (intento > 15) {
+                            clearInterval(checkCloud);
+                            console.log("Conexión en espera cloud.");
+                        }
+                    }, 500);
+                },
+
+                calcularCalendarioMes(esCambioManualSwitch = false) {
+                    let periodo = this.obtenerKeyPeriodo();
+
+                    // Si no viene de un clic físico en el switch, sincronizamos con lo que tenga la nube guardado
+                    if (!esCambioManualSwitch) {
+                        if (this.cronogramaDatosGlobal[periodo] && this.cronogramaDatosGlobal[periodo].esLunesOracionFestivo !== undefined) {
+                            this.esLunesOracionFestivo = this.cronogramaDatosGlobal[periodo].esLunesOracionFestivo;
+                        } else {
+                            this.esLunesOracionFestivo = false;
+                        }
+                    }
+
+                    this.mesUltimaConsulta = this.filtroMes;
+                    this.fechasMiercoles = [];
+                    this.fechasViernes = [];
+                    this.fechasDomingos = [];
+                    let ano = parseInt(this.filtroAno);
+                    let mes = parseInt(this.filtroMes) - 1;
+                    let diasEnMes = new Date(ano, mes + 1, 0).getDate();
+                    let lunesContados = 0;
+                    let domingosContados = 0;
+                    let diaLunesSegundaSemana = 0;
+                    let diaDomingoTerceraSemana = 0;
+                    let diaPrimerDomingo = 0;
+
+                    for (let d = 1; d <= diasEnMes; d++) {
+                        let fechaObjeto = new Date(ano, mes, d);
+                        let diaSemana = fechaObjeto.getDay();
+                        let diaFormateado = d < 10 ? '0' + d : d;
+                        
+                        if (diaSemana === 1) { // Lunes
+                            lunesContados++;
+                            if (lunesContados === 2) diaLunesSegundaSemana = d;
+                        }
+                        
+                        if (diaSemana === 3) this.fechasMiercoles.push(diaFormateado);
+                        if (diaSemana === 5) this.fechasViernes.push(diaFormateado);
+                        
+                        if (diaSemana === 0) { // Domingo
+                            this.fechasDomingos.push(diaFormateado);
+                            domingosContados++;
+                            if (domingosContados === 1) diaPrimerDomingo = d;
+                            if (domingosContados === 3) diaDomingoTerceraSemana = d;
+                        }
+                    }
+
+                    // Fecha del Aseo del Altar (Primer Domingo)
+                    this.fechaAseoAltar = diaPrimerDomingo < 10 ? '0' + diaPrimerDomingo : diaPrimerDomingo;
+                    this.labelAseoAltar = `Primer Domingo ${this.fechaAseoAltar} de ${this.obtenerNombreMesYId(true)}`;
+
+                    // Fecha del Servicio de Oración (Segundo Lunes o Martes si es Festivo)
+                    if (this.esLunesOracionFestivo) {
+                        let diaMartes = diaLunesSegundaSemana + 1;
+                        this.fechaOracionCalculada = diaMartes < 10 ? '0' + diaMartes : diaMartes;
+                        this.labelOracionCalculada = `Martes ${this.fechaOracionCalculada} de ${this.obtenerNombreMesYId(true)} (Corrido por Festivo)`;
+                    } else {
+                        this.fechaOracionCalculada = diaLunesSegundaSemana < 10 ? '0' + diaLunesSegundaSemana : diaLunesSegundaSemana;
+                        this.labelOracionCalculada = `Lunes ${this.fechaOracionCalculada} de ${this.obtenerNombreMesYId(true)}`;
+                    }
+
+                    // Fecha del Ayuno Grupal (Tercer Domingo)
+                    this.fechaAyunoCalculada = diaDomingoTerceraSemana < 10 ? '0' + diaDomingoTerceraSemana : diaDomingoTerceraSemana;
+                    this.labelAyunoCalculada = `Tercer Domingo ${this.fechaAyunoCalculada} de ${this.obtenerNombreMesYId(true)}`;
+
+                    while (this.fechasMiercoles.length < 5) this.fechasMiercoles.push('+1');
+                    while (this.fechasViernes.length < 5) this.fechasViernes.push('+1');
+                    while (this.fechasDomingos.length < 5) this.fechasDomingos.push('+1');
+                },
+
+                alternarFestivoManual() {
+                    // 1. Recalculamos las variables locales inmediatamente
+                    this.calcularCalendarioMes(true);
+                    
+                    // 2. Mandamos la orden a Firebase para que actualice el campo en la nube
+                    let periodo = this.obtenerKeyPeriodo();
+                    if (!this.usandoModoLocal && window.guardarFestivoCloud) {
+                        window.guardarFestivoCloud(periodo, this.esLunesOracionFestivo, this.cronogramaDatosGlobal);
+                    }
+                },
+
+                obtenerKeyPeriodo() { return `${this.filtroAno}_${this.filtroMes}`; },
+
+                obtenerNombreMesYId(soloNombre = false) {
+                    const mesesStr = { '01': 'Enero', '02': 'Febrero', '03': 'Marzo', '04': 'Abril', '05': 'Mayo', '06': 'Junio', '07': 'Julio', '08': 'Agosto', '09': 'Septiembre', '10': 'Octubre', '11': 'Noviembre', '12': 'Diciembre' };
+                    return soloNombre ? mesesStr[this.filtroMes] : `${mesesStr[this.filtroMes]} ${this.filtroAno}`;
+                },
+
+                getValorDinamico(bloqueId, rol) {
+                    let periodo = this.obtenerKeyPeriodo();
+                    if (this.cronogramaDatosGlobal[periodo] &&
+                        this.cronogramaDatosGlobal[periodo][bloqueId] &&
+                        this.cronogramaDatosGlobal[periodo][bloqueId][rol]) {
+                        return this.cronogramaDatosGlobal[periodo][bloqueId][rol];
+                    }
+                    return '—';
+                },
+
+                abrirEditor(bloqueId, rol) {
+                    let valorActual = this.getValorDinamico(bloqueId, rol);
+                    this.editorData = {
+                        bloqueId: bloqueId,
+                        rol: rol,
+                        nuevoValor: valorActual !== '—' ? valorActual : ''
+                    };
+                    this.modalAbierto = true;
+                },
+
+                guardarEdicion() {
+                    let periodo = this.obtenerKeyPeriodo();
+                    let valor = this.editorData.nuevoValor || '';
+                    if (!this.usandoModoLocal && window.guardarAsignacionCloud) {
+                        let form = {
+                            fechaId: this.editorData.bloqueId,
+                            rol: this.editorData.rol,
+                            integrante: valor
+                        };
+                        window.guardarAsignacionCloud(periodo, form, this.cronogramaDatosGlobal, this.esLunesOracionFestivo);
+                    } else {
+                        if (!this.cronogramaDatosGlobal[periodo]) this.cronogramaDatosGlobal[periodo] = {};
+                        if (!this.cronogramaDatosGlobal[periodo][this.editorData.bloqueId]) this.cronogramaDatosGlobal[periodo][this.editorData.bloqueId] = {};
+                        if (valor) {
+                            this.cronogramaDatosGlobal[periodo][this.editorData.bloqueId][this.editorData.rol] = valor;
+                        } else {
+                            delete this.cronogramaDatosGlobal[periodo][this.editorData.bloqueId][this.editorData.rol];
+                        }
+                    }
+                    this.modalAbierto = false;
+                },
+
+                eliminarAsignacion(bloqueId, rol) {
+                    if (confirm(`¿Eliminar asignación de "${rol}" en "${bloqueId}"?`)) {
+                        let periodo = this.obtenerKeyPeriodo();
+                        if (!this.usandoModoLocal && window.guardarAsignacionCloud) {
+                            let form = {
+                                fechaId: bloqueId,
+                                rol: rol,
+                                integrante: ''
+                            };
+                            window.guardarAsignacionCloud(periodo, form, this.cronogramaDatosGlobal, this.esLunesOracionFestivo);
+                        } else {
+                            if (this.cronogramaDatosGlobal[periodo] &&
+                                this.cronogramaDatosGlobal[periodo][bloqueId]) {
+                                delete this.cronogramaDatosGlobal[periodo][bloqueId][rol];
+                            }
+                        }
+                    }
+                },
+
+                limpiarAsignacion() {
+                    this.formAsignacion.integrante = '';
+                },
+
+                async guardarAsignacion() {
+                    if (!this.formAsignacion.integrante) {
+                        alert("¡Oye mi vale! Selecciona un adorador.");
+                        return;
+                    }
+                    let periodo = this.obtenerKeyPeriodo();
+                    if (!this.usandoModoLocal && window.guardarAsignacionCloud) {
+                        window.guardarAsignacionCloud(periodo, this.formAsignacion, this.cronogramaDatosGlobal, this.esLunesOracionFestivo);
+                    } else {
+                        if (!this.cronogramaDatosGlobal[periodo]) this.cronogramaDatosGlobal[periodo] = {};
+                        if (!this.cronogramaDatosGlobal[periodo][this.formAsignacion.fechaId]) this.cronogramaDatosGlobal[periodo][this.formAsignacion.fechaId] = {};
+                        this.cronogramaDatosGlobal[periodo][this.formAsignacion.fechaId][this.formAsignacion.rol] = this.formAsignacion.integrante;
+                        alert("¡Asignación guardada localmente con éxito!");
+                    }
+                },
+
+                calcularServiciosMes(nombre) {
+                    let total = 0;
+                    let periodo = this.obtenerKeyPeriodo();
+                    if (this.cronogramaDatosGlobal[periodo]) {
+                        Object.entries(this.cronogramaDatosGlobal[periodo]).forEach(([key, bloque]) => {
+                            if (key !== 'esLunesOracionFestivo') {
+                                Object.values(bloque).forEach(asignado => {
+                                    if (asignado === nombre) total++;
+                                });
+                            }
+                        });
+                    }
+                    return total;
+                },
+
+                async agregarIntegrante() {
+                    if (!this.nuevoIntegrante.nombre.trim()) return;
+                    if (!this.usandoModoLocal && window.agregarIntegranteCloud) {
+                        window.agregarIntegranteCloud(this.nuevoIntegrante.nombre.trim(), this.nuevoIntegrante.rolBase);
+                    } else {
+                        this.integrantes.push({ nombre: this.nuevoIntegrante.nombre.trim(), rolBase: this.nuevoIntegrante.rolBase });
+                    }
+                    this.nuevoIntegrante.nombre = '';
+                },
+
+                async eliminarIntegrante(id) {
+                    if (!confirm(`¿Eliminar a este integrante?`)) return;
+                    if (!this.usandoModoLocal && window.eliminarIntegranteCloud) {
+                        window.eliminarIntegranteCloud(id);
+                    } else {
+                        this.integrantes = this.integrantes.filter(i => (i.id || i.nombre) !== id);
+                    }
+                }
+            }));
+        });
+    </script>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, doc, setDoc, collection, onSnapshot, addDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCbjMIEZzbJe7DIUs1vwpm0cdL9FB-p8DU",
+            authDomain: "sistema-cronograma-jireh.firebaseapp.com",
+            projectId: "sistema-cronograma-jireh",
+            storageBucket: "sistema-cronograma-jireh.firebasestorage.app",
+            messagingSenderId: "859809000888",
+            appId: "1:859809000888:web:e715fc0e81f6443c8f3344"
+        };
+
+        try {
+            const app = initializeApp(firebaseConfig);
+            const db = getFirestore(app);
+            window.firebaseModuloActivo = true;
+
+            window.conectarSuscripcionesCloud = (alpineComp) => {
+                onSnapshot(collection(db, "integrantes"), (snapshot) => {
+                    alpineComp.integrantes = [];
+                    snapshot.forEach((doc) => {
+                        alpineComp.integrantes.push({ id: doc.id, ...doc.data() });
+                    });
+                });
+
+                onSnapshot(collection(db, "cronogramas_globales"), (snapshot) => {
+                    let datosTemp = {};
+                    snapshot.forEach((doc) => {
+                        datosTemp[doc.id] = doc.data();
+                    });
+                    alpineComp.cronogramaDatosGlobal = datosTemp;
+                    
+                    // Al recibir actualizaciones, recalculamos el mes actual evaluando si tiene festivo
+                    alpineComp.calcularCalendarioMes(false);
+                });
+            };
+
+            // Guarda o elimina asignaciones manteniendo el estado del festivo
+            window.guardarAsignacionCloud = async (periodo, form, datosGlobales, esFestivoActual) => {
+                const docRef = doc(db, "cronogramas_globales", periodo);
+                let mesData = datosGlobales[periodo] || {};
+                
+                // Mantenemos viva la bandera del festivo para que no se borre al guardar un turno
+                mesData.esLunesOracionFestivo = esFestivoActual;
+
+                if (!mesData[form.fechaId]) mesData[form.fechaId] = {};
+                if (form.integrante) {
+                    mesData[form.fechaId][form.rol] = form.integrante;
+                } else {
+                    delete mesData[form.fechaId][form.rol];
+                }
+                await setDoc(docRef, mesData);
+                alert("¡Sincronizado en la Nube con éxito!");
+            };
+
+            // Guarda exclusivamente el estado del Switch de festivo en la nube
+            window.guardarFestivoCloud = async (periodo, esFestivo, datosGlobales) => {
+                const docRef = doc(db, "cronogramas_globales", periodo);
+                let mesData = datosGlobales[periodo] || {};
+                mesData.esLunesOracionFestivo = esFestivo;
+                await setDoc(docRef, mesData);
+            };
+
+            window.agregarIntegranteCloud = async (nombre, rolBase) => {
+                await addDoc(collection(db, "integrantes"), { nombre, rolBase });
+            };
+
+            window.eliminarIntegranteCloud = async (id) => {
+                await deleteDoc(doc(db, "integrantes", id));
+            };
+
+        } catch (err) {
+            console.log("Modo local activo.", err);
+        }
+    </script>
+</body>
+</html>
