@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Administrativo - Control Pastoral</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        .tab-btn.active { border-bottom: 3px solid #6366f1; color: #818cf8; font-weight: bold; }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 font-sans min-h-screen">
+
+    <div class="max-w-6xl mx-auto p-4">
+        
+        <header class="flex flex-col md:flex-row justify-between items-center mb-6 bg-slate-800 p-4 rounded-xl border border-slate-700 shadow-lg">
+            <div>
+                <h1 class="text-2xl font-bold text-indigo-400">⚙️ Dashboard Pastoral</h1>
+                <p class="text-xs text-slate-400">Gestión de Personal, Reportes y Descarga PDF</p>
+            </div>
+            <div class="mt-4 md:mt-0 flex gap-2">
+                <button onclick="generarPDF()" class="bg-red-600 hover:bg-red-500 text-white text-xs font-bold px-4 py-2 rounded-lg transition flex items-center gap-1">
+                    📄 DESCARGAR REPORTE EN PDF
+                </button>
+            </div>
+        </header>
+
+        <nav class="flex border-b border-slate-700 mb-6 bg-slate-800/50 rounded-t-xl">
+            <button onclick="cambiarTab('tab-dashboard')" id="btn-tab-dashboard" class="tab-btn active px-6 py-3 text-slate-400 hover:text-white transition">📊 Dashboard & Reporte</button>
+            <button onclick="cambiarTab('tab-hermanos')" id="btn-tab-hermanos" class="tab-btn px-6 py-3 text-slate-400 hover:text-white transition">👥 Registro de Personal</button>
+        </nav>
+
+        <div id="tab-dashboard" class="tab-content">
+            
+            <div class="bg-slate-800 border border-slate-700 p-4 rounded-xl mb-6 flex flex-wrap gap-4 items-center">
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">Actividad</label>
+                    <select id="filtro-actividad" onchange="cargarDashboard()" class="bg-slate-900 border border-slate-700 rounded-lg p-2 text-sm text-white">
+                        <option value="Devocional">🌅 Devocional</option>
+                        <option value="Ayuno">🙏 Ayuno</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">Fecha del Reporte</label>
+                    <input type="date" id="filtro-fecha" onchange="cargarDashboard()" class="bg-slate-900 border border-slate-700 rounded-lg p-2 text-sm text-white">
+                </div>
+            </div>
+
+            <div id="area-reporte-pdf" class="p-2 bg-slate-900 rounded-xl">
+
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                    <div class="bg-slate-800 border border-slate-700 p-4 rounded-xl text-center">
+                        <p class="text-xs text-slate-400">Total Personal Activo</p>
+                        <h3 id="m-total" class="text-3xl font-bold text-white mt-1">0</h3>
+                    </div>
+                    <div class="bg-slate-800 border border-emerald-500/30 p-4 rounded-xl text-center">
+                        <p class="text-xs text-emerald-400">Asistieron</p>
+                        <h3 id="m-presentes" class="text-3xl font-bold text-emerald-400 mt-1">0</h3>
+                    </div>
+                    <div class="bg-slate-800 border border-amber-500/30 p-4 rounded-xl text-center">
+                        <p class="text-xs text-amber-400">Reportaron Excusa</p>
+                        <h3 id="m-excusas" class="text-3xl font-bold text-amber-400 mt-1">0</h3>
+                    </div>
+                    <div class="bg-slate-800 border border-rose-500/30 p-4 rounded-xl text-center">
+                        <p class="text-xs text-rose-400">Ausentes (Sin Excusa)</p>
+                        <h3 id="m-ausentes" class="text-3xl font-bold text-rose-400 mt-1">0</h3>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    
+                    <div class="bg-slate-800 border border-slate-700 p-4 rounded-xl flex flex-col items-center justify-center">
+                        <h3 class="text-xs font-bold mb-2 text-slate-300">Distribución del Personal</h3>
+                        <div class="w-full max-w-[200px]">
+                            <canvas id="chartDona"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="lg:col-span-2 bg-slate-800 border border-slate-700 p-4 rounded-xl">
+                        <h3 class="text-sm font-bold mb-3 text-slate-300">📋 Reporte General de Asistencia</h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs text-slate-300">
+                                <thead class="bg-slate-700/50 uppercase text-slate-400">
+                                    <tr>
+                                        <th class="p-2">Personal</th>
+                                        <th class="p-2">Estado</th>
+                                        <th class="p-2">Detalle / Motivo</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabla-novedades">
+                                    <tr><td colspan="3" class="p-4 text-center text-slate-500">Cargando reporte...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+        <div id="tab-hermanos" class="tab-content hidden">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                
+                <div class="bg-slate-800 border border-slate-700 p-6 rounded-xl h-fit">
+                    <h3 class="text-md font-bold text-indigo-400 mb-4">✍️ Registrar Nuevo Personal</h3>
+                    <form id="form-hermano" onsubmit="guardarHermano(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-xs text-slate-400 mb-1">Nombre Completo *</label>
+                            <input type="text" id="nombre-hermano" required class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-slate-400 mb-1">Teléfono / WhatsApp</label>
+                            <input type="text" id="telefono-hermano" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white">
+                        </div>
+                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2.5 rounded-lg transition">
+                            Guardar en Base de Datos
+                        </button>
+                    </form>
+                </div>
+
+                <div class="md:col-span-2 bg-slate-800 border border-slate-700 p-6 rounded-xl">
+                    <h3 class="text-md font-bold text-slate-300 mb-4">📜 Personal Registrado</h3>
+                    <div id="lista-hermanos" class="space-y-2 max-h-[450px] overflow-y-auto">
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyCOYRDnksd3HmiATlMUdAG_uF2MZMi7qVE",
+            databaseURL: "https://musicflow-banda-default-rtdb.firebaseio.com"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        let chartInstance = null;
+
+        document.getElementById('filtro-fecha').value = new Date().toISOString().split('T')[0];
+
+        function cambiarTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabId).classList.remove('hidden');
+            document.getElementById(`btn-${tabId}`).classList.add('active');
+        }
+
+        async function cargarDashboard() {
+            const fecha = document.getElementById('filtro-fecha').value;
+            const actividad = document.getElementById('filtro-actividad').value;
+            const idSesion = `${fecha}_${actividad}`;
+
+            const snapHermanos = await db.ref('hermanos').once('value');
+            if (!snapHermanos.exists()) {
+                document.getElementById('tabla-novedades').innerHTML = `<tr><td colspan="3" class="p-4 text-center text-slate-500">No hay personal registrado en el sistema.</td></tr>`;
+                document.getElementById('m-total').innerText = "0";
+                document.getElementById('m-presentes').innerText = "0";
+                document.getElementById('m-excusas').innerText = "0";
+                document.getElementById('m-ausentes').innerText = "0";
+                renderChart(0, 0, 0);
+                return;
+            }
+
+            const personalTotal = snapHermanos.val();
+            const snapAsistencia = await db.ref(`asistencias/${idSesion}/detalles`).once('value');
+            const reportesRealizados = snapAsistencia.exists() ? snapAsistencia.val() : {};
+
+            let presentes = 0, excusas = 0, ausentes = 0;
+            const tabla = document.getElementById('tabla-novedades');
+            tabla.innerHTML = "";
+
+            let totalPersonal = Object.keys(personalTotal).length;
+
+            Object.keys(personalTotal).forEach(id => {
+                const persona = personalTotal[id];
+                const reporte = reportesRealizados[id];
+
+                let estadoFinal = "Ausente";
+                let motivoFinal = "Sin excusa (No reportó)";
+                let color = "text-rose-400";
+
+                if (reporte) {
+                    if (reporte.estado === 'Presente') {
+                        estadoFinal = "Presente";
+                        motivoFinal = "Asistió";
+                        color = "text-emerald-400";
+                        presentes++;
+                    } else if (reporte.estado === 'Excusa') {
+                        estadoFinal = "Excusa";
+                        motivoFinal = reporte.motivo || "Con excusa";
+                        color = "text-amber-400";
+                        excusas++;
+                    }
+                } else {
+                    ausentes++;
+                }
+
+                const tr = document.createElement('tr');
+                tr.className = "border-b border-slate-700/50";
+                tr.innerHTML = `
+                    <td class="p-2 font-semibold text-white">${persona.nombre}</td>
+                    <td class="p-2 font-bold ${color}">${estadoFinal}</td>
+                    <td class="p-2 text-slate-300 italic">${motivoFinal}</td>
+                `;
+                tabla.appendChild(tr);
+            });
+
+            document.getElementById('m-total').innerText = totalPersonal;
+            document.getElementById('m-presentes').innerText = presentes;
+            document.getElementById('m-excusas').innerText = excusas;
+            document.getElementById('m-ausentes').innerText = ausentes;
+
+            renderChart(presentes, excusas, ausentes);
+        }
+
+        function renderChart(p, e, a) {
+            const ctx = document.getElementById('chartDona').getContext('2d');
+            if (chartInstance) chartInstance.destroy();
+            chartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Presente', 'Excusa', 'Ausente (Sin Excusa)'],
+                    datasets: [{
+                        data: [p, e, a],
+                        backgroundColor: ['#10b981', '#f59e0b', '#f43f5e'],
+                        borderWidth: 0
+                    }]
+                },
+                options: { plugins: { legend: { display: false } }, cutout: '70%' }
+            });
+        }
+
+        function guardarHermano(e) {
+            e.preventDefault();
+            const nombre = document.getElementById('nombre-hermano').value.trim();
+            const telefono = document.getElementById('telefono-hermano').value.trim();
+            if(nombre) {
+                db.ref('hermanos').push({ nombre, telefono }).then(() => {
+                    document.getElementById('form-hermano').reset();
+                    cargarDashboard();
+                });
+            }
+        }
+
+        db.ref('hermanos').on('value', snap => {
+            const cont = document.getElementById('lista-hermanos');
+            cont.innerHTML = "";
+            if(!snap.exists()) {
+                cont.innerHTML = "<p class='text-slate-500 text-xs'>Sin registros.</p>";
+                return;
+            }
+            snap.forEach(c => {
+                const h = c.val();
+                cont.innerHTML += `
+                    <div class="flex justify-between items-center bg-slate-900 border border-slate-700/50 p-3 rounded-lg text-xs">
+                        <div><b class="text-white">${h.nombre}</b> <span class="text-slate-400 block">${h.telefono || 'Sin tel'}</span></div>
+                        <button onclick="eliminarHermano('${c.key}')" class="text-rose-400 hover:underline">Eliminar</button>
+                    </div>`;
+            });
+        });
+
+        function eliminarHermano(key) {
+            if(confirm("¿Eliminar este personal?")) {
+                db.ref(`hermanos/${key}`).remove().then(() => cargarDashboard());
+            }
+        }
+
+        function generarPDF() {
+            const elemento = document.getElementById('area-reporte-pdf');
+            const fecha = document.getElementById('filtro-fecha').value;
+            const actividad = document.getElementById('filtro-actividad').value;
+
+            const opt = {
+                margin:       0.5,
+                filename:     `Reporte_Asistencia_${actividad}_${fecha}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, backgroundColor: '#0f172a' },
+                jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+            };
+
+            html2pdf().set(opt).from(elemento).save();
+        }
+
+        window.onload = cargarDashboard;
+    </script>
+</body>
+</html>
