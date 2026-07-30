@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MusicFlow PRO - Banda</title>
+    <title>JirehMusicFlow PRO - 5 Módulos</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
     <style>
-        /* DISEÑO OSCURO PROFESIONAL INTEGRADO */
+        /* ESTILOS GENERALES Y TEMA OSCURO */
         body {
             background-color: #0f172a;
             color: #f1f5f9;
@@ -18,6 +18,51 @@
             max-width: 1000px;
             margin: 0 auto;
         }
+
+        /* BARRA DE PESTAÑAS (TABS) ESTILO EXCEL */
+        .tabs-container {
+            display: flex;
+            gap: 4px;
+            background: #1e293b;
+            padding: 6px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            border: 1px solid #334155;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+        .tab-button {
+            flex: 1;
+            padding: 10px 14px;
+            background: transparent;
+            color: #94a3b8;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+        .tab-button:hover {
+            color: white;
+            background: #334155;
+        }
+        .tab-button.active {
+            background: #4f46e5;
+            color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        /* CONTENIDO DE CADA PESTAÑA */
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+
+        /* TARJETAS DE CONTENIDO */
         .card {
             background: #1e293b;
             border-radius: 12px;
@@ -26,21 +71,52 @@
             box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3);
             border: 1px solid #334155;
         }
-        .btn-top {
+
+        /* CARROUSEL / SCROLL HORIZONTAL DEL SETLIST EN EL VISOR */
+        .setlist-scroll-container {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+            margin-bottom: 12px;
+            border-bottom: 1px solid #334155;
+            scrollbar-width: thin;
+            scrollbar-color: #4f46e5 #0f172a;
+        }
+        .setlist-scroll-container::-webkit-scrollbar {
+            height: 6px;
+        }
+        .setlist-scroll-container::-webkit-scrollbar-thumb {
+            background: #4f46e5;
+            border-radius: 4px;
+        }
+        .song-chip {
+            background: #0f172a;
+            border: 1px solid #334155;
+            padding: 8px 14px;
+            border-radius: 20px;
+            white-space: nowrap;
+            cursor: pointer;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+            color: #cbd5e1;
+        }
+        .song-chip:hover {
+            border-color: #6366f1;
+            background: #1e1b4b;
+            color: white;
+        }
+        .song-chip.active-chip {
             background: #4f46e5;
             color: white;
+            border-color: #818cf8;
             font-weight: bold;
-            padding: 12px 20px;
-            border-radius: 8px;
-            border: none;
-            width: 100%;
-            cursor: pointer;
-            margin-bottom: 16px;
-            font-size: 1rem;
         }
-        .btn-top:hover { background: #4338ca; }
 
-        /* CÍRCULO ARMÓNICO ADAPTADO Y RESPONSIVO */
+        /* CÍRCULO ARMÓNICO Y GRADOS */
         .circle-header {
             display: flex;
             justify-content: space-between;
@@ -75,7 +151,7 @@
             font-size: 0.95rem;
         }
         .distribucion-box {
-            background-color: #1e293b;
+            background-color: #0f172a;
             border: 1px solid #475569;
             border-radius: 8px;
             padding: 12px;
@@ -93,7 +169,7 @@
             font-size: 0.85rem;
         }
 
-        /* CONTROLES DEL CÍRCULO INDEPENDIENTE */
+        /* CONTROLES DEL CÍRCULO */
         .transposer-flex {
             display: flex;
             align-items: center;
@@ -127,6 +203,20 @@
         }
         select.inline-select { width: auto; margin: 0; }
 
+        /* REPRODUCTOR DE AUDIO */
+        .audio-container {
+            margin-top: 10px;
+            background: #0f172a;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #475569;
+        }
+        audio {
+            width: 100%;
+            height: 36px;
+            outline: none;
+        }
+
         /* FORMULARIO Y LISTAS */
         input[type="text"], textarea {
             width: 100%;
@@ -147,7 +237,7 @@
         .btn-pdf {
             display: block;
             text-align: center;
-            background: #1e293b;
+            background: #0f172a;
             color: #94a3b8;
             padding: 12px;
             border-radius: 8px;
@@ -168,7 +258,7 @@
         }
         .btn-save:hover { background: #059669; }
 
-        /* ELEMENTOS DEL SETLIST */
+        /* ELEMENTOS DE LISTA */
         .item-setlist {
             background: #0f172a;
             border: 1px solid #334155;
@@ -178,9 +268,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            cursor: pointer;
         }
-        .item-setlist:hover { background: #1e293b; border-color: #4f46e5; }
         .item-setlist button {
             background: #ef4444;
             color: white;
@@ -212,153 +300,171 @@
             font-size: 0.9em;
         }
 
-        /* REGLAS ESPECÍFICAS PARA CELULARES */
+        /* RESPONSIVO PARA MÓVILES */
         @media (max-width: 600px) {
             body { padding: 8px; }
             .card { padding: 12px; }
-            h1 { font-size: 1.6rem !important; }
-            
-            .grid-grados {
-                grid-template-columns: repeat(4, 1fr);
-                gap: 4px;
-            }
+            .tabs-container { justify-content: flex-start; }
+            .tab-button { font-size: 0.78rem; padding: 8px 10px; }
+            .grid-grados { grid-template-columns: repeat(4, 1fr); gap: 4px; }
             .header-grado { font-size: 0.7rem; padding: 4px 2px; }
             .box-nota { font-size: 0.85rem; padding: 8px 2px; }
-            
-            .circle-header {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            .transposer-flex {
-                width: 100%;
-                justify-content: space-between;
-            }
-            
-            .grid-selects {
-                grid-template-columns: 1fr;
-                gap: 8px;
-            }
-            .badge-grado {
-                min-width: 40px;
-                font-size: 0.75rem;
-                padding: 4px;
-            }
+            .grid-selects { grid-template-columns: 1fr; gap: 8px; }
         }
     </style>
 </head>
 <body>
 
     <div class="app-container">
-        <button onclick="toggleAdmin()" class="btn-top">⚙️ MODO DIRECTOR / ADMINISTRADOR</button>
 
-        <!-- PANEL DEL CÍRCULO ARMÓNICO -->
-        <div class="card">
-            <div class="circle-header">
-                <h3 style="margin:0; font-size: 1.1rem;">🔄 Círculo Armónico</h3>
-                <div class="transposer-flex">
-                    <div>
-                        <button onclick="cambiarTono(-1)" class="btn-ctrl">-</button>
-                        <span id="tono-actual" class="tono-master-display">C</span>
-                        <button onclick="cambiarTono(1)" class="btn-ctrl">+</button>
-                    </div>
-                    <select id="select-modo-master" onchange="actualizarCirculoVisual()" class="inline-select">
-                        <option value="Mayor">🔵 Mayor</option>
-                        <option value="Menor">🔴 Menor</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="grid-grados">
-                <div><div class="header-grado">Raíz</div><div class="box-nota" id="lbl-master">C</div></div>
-                <div><div class="header-grado" id="h-1">I</div><div class="box-nota" id="g-1">-</div></div>
-                <div><div class="header-grado" id="h-2">ii</div><div class="box-nota" id="g-2">-</div></div>
-                <div><div class="header-grado" id="h-3">iii</div><div class="box-nota" id="g-3">-</div></div>
-                <div><div class="header-grado" id="h-4">IV</div><div class="box-nota" id="g-4">-</div></div>
-                <div><div class="header-grado" id="h-5">V</div><div class="box-nota" id="g-5">-</div></div>
-                <div><div class="header-grado" id="h-6">vi</div><div class="box-nota" id="g-6">-</div></div>
-                <div><div class="header-grado" id="h-7">vii°</div><div class="box-nota" id="g-7">-</div></div>
-            </div>
-
-            <div class="distribucion-box">
-                <small style="font-weight: bold; display: block; margin-bottom: 6px; color: #94a3b8;">🎯 Guía Rápida:</small>
-                <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-                    <div class="badge-grado"><small id="dh-1">I</small><br><b id="d-1">-</b></div>
-                    <div class="badge-grado"><small id="dh-2">ii</small><br><b id="d-2">-</b></div>
-                    <div class="badge-grado"><small id="dh-3">iii</small><br><b id="d-3">-</b></div>
-                    <div class="badge-grado"><small id="dh-4">IV</small><br><b id="d-4">-</b></div>
-                    <div class="badge-grado"><small id="dh-5">V</small><br><b id="d-5">-</b></div>
-                    <div class="badge-grado"><small id="dh-6">vi</small><br><b id="d-6">-</b></div>
-                    <div class="badge-grado" style="background:#7f1d1d; border-color:#ef4444; color:#fca5a5;"><small id="dh-7">vii°</small><br><b id="d-7">-</b></div>
-                </div>
-            </div>
+        <!-- NAVEGACIÓN EN PESTAÑAS (EXCEL STYLE) -->
+        <div class="tabs-container">
+            <button class="tab-button active" onclick="openTab(event, 'tab-visor')">📱 Visor</button>
+            <button class="tab-button" onclick="openTab(event, 'tab-circulo')">🔄 Círculo</button>
+            <button class="tab-button" onclick="openTab(event, 'tab-setlist')">📋 Orden de Hoy</button>
+            <button class="tab-button" id="btn-tab-catalogo" onclick="openTab(event, 'tab-catalogo')">📚 Catálogo General</button>
+            <button class="tab-button" onclick="openTab(event, 'tab-admin')">⚙️ Registrar Canción</button>
         </div>
 
-        <!-- FORMULARIO DE REGISTRO DIRECTO -->
-        <div class="card admin-only" id="panel-admin" style="display:none;">
-            <h4 style="margin-top:0; color:#38bdf8;">📝 REGISTRAR O EDITAR CANCIÓN</h4>
-            <form id="form-registro" onsubmit="event.preventDefault();">
-                <input type="hidden" id="edit-id">
-                <input type="text" id="input-titulo" placeholder="Título de la Canción *" required>
-                <input type="text" id="input-cantante" placeholder="Cantante / Voz líder">
+        <!-- PESTAÑA 1: VISOR PRINCIPAL -->
+        <div id="tab-visor" class="tab-content active">
+            <div class="card">
                 
-                <div class="grid-selects">
-                    <div>
-                        <small style="color:#94a3b8;">Tono Original:</small>
-                        <select id="input-tono-original"></select>
+                <!-- BARRA DE DESPLAZAMIENTO HORIZONTAL (SCROLL DEL SETLIST) -->
+                <small style="color:#38bdf8; font-weight: bold; display: block; margin-bottom: 6px;">📋 ORDEN DE HOY (Desliza y selecciona):</small>
+                <div id="visor-setlist-scroll" class="setlist-scroll-container">
+                    <span style="color:#64748b; font-size:0.85rem;">Cargando lista de hoy...</span>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 10px; margin-top: 10px;">
+                    <div style="flex-grow: 1;">
+                        <h1 id="titulo-cancion" style="margin:0; font-size: 1.8rem; word-break: break-word;">---</h1>
+                        <p style="margin: 4px 0; color:#94a3b8; font-size: 0.9rem;">🎙️ Voz: <span id="info-cantante">--</span> | 🎼 Tono: <span id="info-tono" style="color:#10b981; font-weight: bold;">--</span></p>
+                        
+                        <!-- REPRODUCTOR INTEGRADO DE DRIVE -->
+                        <div id="bloque-audio" class="audio-container" style="display:none;">
+                            <small style="color:#38bdf8; font-weight:bold; display:block; margin-bottom:4px;">🎵 Audio de Referencia / Ensayo:</small>
+                            <audio id="reproductor-audio" controls preload="none"></audio>
+                        </div>
                     </div>
-                    <div>
-                        <small style="color:#94a3b8;">Tono del Cantante (Mayor o Menor):</small>
-                        <select id="input-tono-cantante"></select>
+                    <div style="display: flex; gap: 6px;">
+                        <button onclick="ajustarZoom(-0.05)" class="btn-ctrl">A -</button>
+                        <button onclick="ajustarZoom(0.05)" class="btn-ctrl">A +</button>
+                    </div>
+                </div>
+                <hr style="border-color: #334155; margin: 12px 0;">
+                <div id="letra-acordes" class="letra-box">Selecciona una canción de la barra superior...</div>
+            </div>
+        </div>
+
+        <!-- PESTAÑA 2: CÍRCULO ARMÓNICO -->
+        <div id="tab-circulo" class="tab-content">
+            <div class="card">
+                <div class="circle-header">
+                    <h3 style="margin:0; font-size: 1.1rem;">🔄 Círculo Armónico Interactivo</h3>
+                    <div class="transposer-flex">
+                        <div>
+                            <button onclick="cambiarTono(-1)" class="btn-ctrl">-</button>
+                            <span id="tono-actual" class="tono-master-display">C</span>
+                            <button onclick="cambiarTono(1)" class="btn-ctrl">+</button>
+                        </div>
+                        <select id="select-modo-master" onchange="actualizarCirculoVisual()" class="inline-select">
+                            <option value="Mayor">🔵 Mayor</option>
+                            <option value="Menor">🔴 Menor</option>
+                        </select>
                     </div>
                 </div>
 
-                <label class="btn-pdf">
-                    📄 ASIGNAR TEXTO DESDE PDF
-                    <input type="file" id="input-pdf" accept="application/pdf" style="display:none;" onchange="importarPDF(this)">
-                </label>
-
-                <textarea id="input-cuerpo" rows="8" placeholder="Escribe la letra aquí de forma simple."></textarea>
-                <button type="button" onclick="handleGuardar()" class="btn-save">GUARDAR CANCION 💾</button>
-            </form>
-        </div>
-
-        <!-- ORDEN DE HOY -->
-        <div class="card">
-            <h3 style="margin-top:0; font-size: 1.2rem;">📋 ORDEN DE HOY</h3>
-            <div id="setlist-items">Sincronizando...</div>
-        </div>
-
-        <!-- VISOR MULTIMEDIA -->
-        <div class="card">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 10px;">
-                <div>
-                    <h1 id="titulo-cancion" style="margin:0; font-size: 1.8rem; word-break: break-word;">---</h1>
-                    <p style="margin: 4px 0; color:#94a3b8; font-size: 0.9rem;">🎙️ <span id="info-cantante">--</span> | 🎼 TONO ASIGNADO: <span id="info-tono" style="color:#10b981; font-weight: bold;">--</span></p>
+                <div class="grid-grados">
+                    <div><div class="header-grado">Raíz</div><div class="box-nota" id="lbl-master">C</div></div>
+                    <div><div class="header-grado" id="h-1">I</div><div class="box-nota" id="g-1">-</div></div>
+                    <div><div class="header-grado" id="h-2">ii</div><div class="box-nota" id="g-2">-</div></div>
+                    <div><div class="header-grado" id="h-3">iii</div><div class="box-nota" id="g-3">-</div></div>
+                    <div><div class="header-grado" id="h-4">IV</div><div class="box-nota" id="g-4">-</div></div>
+                    <div><div class="header-grado" id="h-5">V</div><div class="box-nota" id="g-5">-</div></div>
+                    <div><div class="header-grado" id="h-6">vi</div><div class="box-nota" id="g-6">-</div></div>
+                    <div><div class="header-grado" id="h-7">vii°</div><div class="box-nota" id="g-7">-</div></div>
                 </div>
-                <div style="display: flex; gap: 6px;">
-                    <button onclick="ajustarZoom(-0.05)" class="btn-ctrl">A -</button>
-                    <button onclick="ajustarZoom(0.05)" class="btn-ctrl">A +</button>
+
+                <div class="distribucion-box">
+                    <small style="font-weight: bold; display: block; margin-bottom: 6px; color: #94a3b8;">🎯 Resumen de Grados:</small>
+                    <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                        <div class="badge-grado"><small id="dh-1">I</small><br><b id="d-1">-</b></div>
+                        <div class="badge-grado"><small id="dh-2">ii</small><br><b id="d-2">-</b></div>
+                        <div class="badge-grado"><small id="dh-3">iii</small><br><b id="d-3">-</b></div>
+                        <div class="badge-grado"><small id="dh-4">IV</small><br><b id="d-4">-</b></div>
+                        <div class="badge-grado"><small id="dh-5">V</small><br><b id="d-5">-</b></div>
+                        <div class="badge-grado"><small id="dh-6">vi</small><br><b id="d-6">-</b></div>
+                        <div class="badge-grado" style="background:#7f1d1d; border-color:#ef4444; color:#fca5a5;"><small id="dh-7">vii°</small><br><b id="d-7">-</b></div>
+                    </div>
                 </div>
             </div>
-            <hr style="border-color: #334155; margin: 12px 0;">
-            <div id="letra-acordes" class="letra-box">Selecciona un tema...</div>
         </div>
 
-        <!-- BIBLIOTECA GENERAL -->
-        <div class="card admin-only" style="display:none;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
-                <h4 style="margin:0;">📚 BIBLIOTECA GENERAL</h4>
-                <input type="text" id="buscar-biblioteca" onkeyup="filtrarBiblioteca()" placeholder="🔍 Buscar..." style="width: 100%; max-width: 200px; margin:0;">
+        <!-- PESTAÑA 3: GESTIÓN DE ORDEN DE HOY -->
+        <div id="tab-setlist" class="tab-content">
+            <div class="card">
+                <h3 style="margin-top:0; font-size: 1.2rem;">📋 GESTIÓN DE LA LISTA DE HOY</h3>
+                <p style="color:#94a3b8; font-size:0.85rem;">Elimina las canciones que ya interpretaron para mantener limpia la lista del evento o ensayo.</p>
+                <div id="setlist-items">Cargando canciones...</div>
             </div>
-            <div id="lista-catalogo"></div>
         </div>
+
+        <!-- PESTAÑA 4: CATÁLOGO GENERAL (BIBLIOTECA COMPLETA) -->
+        <div id="tab-catalogo" class="tab-content">
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+                    <div>
+                        <h3 style="margin:0;">📚 CATÁLOGO GENERAL DE CANCIONES</h3>
+                        <p style="margin:4px 0 0 0; color:#94a3b8; font-size:0.85rem;">Busca y agrega canciones a la lista de hoy tocando el botón (➕).</p>
+                    </div>
+                    <input type="text" id="buscar-biblioteca" onkeyup="filtrarBiblioteca()" placeholder="🔍 Buscar canción..." style="width: 100%; max-width: 250px; margin:0;">
+                </div>
+                <div id="lista-catalogo">Cargando catálogo...</div>
+            </div>
+        </div>
+
+        <!-- PESTAÑA 5: ADMINISTRADOR Y REGISTRO -->
+        <div id="tab-admin" class="tab-content">
+            <div class="card">
+                <h3 style="margin-top:0; color:#38bdf8;" id="titulo-form">📝 MÓDULO DE REGISTRO</h3>
+                <form id="form-registro" onsubmit="event.preventDefault();">
+                    <input type="hidden" id="edit-id">
+                    <input type="text" id="input-titulo" placeholder="Título de la Canción *" required>
+                    <input type="text" id="input-cantante" placeholder="Cantante / Voz líder">
+                    <input type="text" id="input-audio-url" placeholder="🔗 Link del Audio de Google Drive">
+                    
+                    <div class="grid-selects">
+                        <div>
+                            <small style="color:#94a3b8;">Tono Original:</small>
+                            <select id="input-tono-original"></select>
+                        </div>
+                        <div>
+                            <small style="color:#94a3b8;">Tono del Cantante:</small>
+                            <select id="input-tono-cantante"></select>
+                        </div>
+                    </div>
+
+                    <label class="btn-pdf">
+                        📄 EXTRAER TEXTO DESDE PDF
+                        <input type="file" id="input-pdf" accept="application/pdf" style="display:none;" onchange="importarPDF(this)">
+                    </label>
+
+                    <textarea id="input-cuerpo" rows="10" placeholder="Escribe la letra y acordes aquí."></textarea>
+                    <button type="button" onclick="handleGuardar()" class="btn-save" id="btn-guardar-txt">GUARDAR EN LA BASE DE DATOS 💾</button>
+                    <button type="button" onclick="cancelarEdicion()" id="btn-cancelar-edit" style="display:none; background:#64748b; color:white; border:none; padding:10px; border-radius:8px; width:100%; margin-top:8px; cursor:pointer;">Cancelar Edición</button>
+                </form>
+            </div>
+        </div>
+
     </div>
 
-    <!-- SDK COMPAT DE FIREBASE REALTIME DATABASE -->
+    <!-- FIREBASE REALTIME DATABASE SDK COMPAT -->
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
 
     <script>
+        // CONFIGURACIÓN DE FIREBASE
         const firebaseConfig = {
             apiKey: "AIzaSyCOYRDnksd3HmiATlMUdAG_uF2MZMi7qVE",
             databaseURL: "https://musicflow-banda-default-rtdb.firebaseio.com"
@@ -366,7 +472,6 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // Escala extendida para soportar mapeo directo indexado de menores
         const escala = [
             'C','C#','D','D#','E','F','F#','G','G#','A','A#','B',
             'Cm','C#m','Dm','D#m','Em','Fm','F#m','Gm','G#m','Am','A#m','Bm'
@@ -375,6 +480,23 @@
         let cancionesLocales = [];
         let zoomActual = 1.15;
         let notaMasterGlobal = 'C';
+        let cancionActivaId = null;
+
+        // LÓGICA DE PESTAÑAS (TABS)
+        function openTab(evt, tabId) {
+            const contents = document.getElementsByClassName("tab-content");
+            for (let i = 0; i < contents.length; i++) {
+                contents[i].classList.remove("active");
+            }
+            const buttons = document.getElementsByClassName("tab-button");
+            for (let i = 0; i < buttons.length; i++) {
+                buttons[i].classList.remove("active");
+            }
+            document.getElementById(tabId).classList.add("active");
+            if (evt && evt.currentTarget) {
+                evt.currentTarget.classList.add("active");
+            }
+        }
 
         function renderizarAcordesFijos(texto) {
             if (!texto) return "";
@@ -384,8 +506,22 @@
             });
         }
 
+        // OPTIMIZADOR DE ENLACES DE GOOGLE DRIVE
+        function optimizarUrlAudio(url) {
+            if (!url) return "";
+            if (url.includes("drive.google.com")) {
+                let id = "";
+                if (url.includes("/file/d/")) {
+                    id = url.split("/file/d/")[1].split("/")[0];
+                } else if (url.includes("id=")) {
+                    id = url.split("id=")[1].split("&")[0];
+                }
+                if (id) return `https://docs.google.com/uc?export=download&id=${id}`;
+            }
+            return url;
+        }
+
         function calcularCirculoGrados(notaRaiz, modo) {
-            // Limpia la 'm' para buscar la posición base en la escala
             let notaLimpia = notaRaiz.replace('m', '');
             let indexRaiz = escala.indexOf(notaLimpia);
             if (indexRaiz === -1 || indexRaiz >= 12) return;
@@ -422,9 +558,11 @@
             calcularCirculoGrados(notaMasterGlobal, modo);
         }
 
+        // ESCUCHADOR DE CANCIÓN ACTIVA
         db.ref('musica_activa').on('value', snap => {
             const d = snap.val(); if (!d || !d.cancion) return;
             const s = d.cancion;
+            cancionActivaId = s.id || null;
             
             const tFijo = s.tonoBase !== undefined ? s.tonoBase : 0;
             
@@ -432,8 +570,18 @@
             document.getElementById('info-cantante').innerText = s.cantante || "--";
             document.getElementById('info-tono').innerText = escala[tFijo] || "--";
             
+            // CARGA DE AUDIO
+            const contenedorAudio = document.getElementById('bloque-audio');
+            const reproductor = document.getElementById('reproductor-audio');
+            if (s.audioUrl && s.audioUrl.trim() !== "") {
+                reproductor.src = optimizarUrlAudio(s.audioUrl);
+                contenedorAudio.style.display = "block";
+            } else {
+                reproductor.src = "";
+                contenedorAudio.style.display = "none";
+            }
+            
             const tCirculo = d.tono !== undefined ? d.tono : tFijo;
-            // Si la canción seleccionada es menor, configuramos automáticamente el visor del círculo en "Menor"
             if(escala[tFijo] && escala[tFijo].includes('m')) {
                 document.getElementById('select-modo-master').value = 'Menor';
             } else if (d.tono === undefined) {
@@ -448,7 +596,59 @@
             visor.style.fontSize = zoomActual + "rem";
 
             actualizarCirculoVisual();
+            marcarChipActivo();
         });
+
+        // ESCUCHADOR Y RENDEREADOR DEL SETLIST EN EL SCROLL
+        db.ref('setlist').on('value', snap => {
+            const scrollCont = document.getElementById('visor-setlist-scroll');
+            const managementCont = document.getElementById('setlist-items');
+            
+            scrollCont.innerHTML = "";
+            managementCont.innerHTML = "";
+            
+            if (!snap.exists()) {
+                scrollCont.innerHTML = `<span style="color:#64748b; font-size:0.85rem;">No hay canciones agregadas hoy.</span>`;
+                managementCont.innerHTML = `<p style="color:#64748b;">No hay canciones en la lista.</p>`;
+                return;
+            }
+
+            let index = 1;
+            snap.forEach(i => {
+                const s = i.val();
+                s.setlistKey = i.key;
+
+                // 1. Chip en Scroll Horizontal
+                const chip = document.createElement('div');
+                chip.className = `song-chip ${cancionActivaId === s.id ? 'active-chip' : ''}`;
+                chip.id = `chip-${s.setlistKey}`;
+                chip.innerHTML = `<span>${index}. <b>${s.titulo}</b></span> <small style="opacity:0.8;">(${escala[s.tonoBase] || 'C'})</small>`;
+                chip.onclick = () => {
+                    db.ref('musica_activa').set({ cancion: s, tono: s.tonoBase % 12 });
+                };
+                scrollCont.appendChild(chip);
+
+                // 2. Item para el módulo de Gestión de Lista
+                const div = document.createElement('div');
+                div.className = "item-setlist";
+                div.innerHTML = `<span>🎵 <b>${index}. ${s.titulo}</b> <small style="color:#a7f3d0;">(${escala[s.tonoBase] || 'C'})</small></span> <button onclick="db.ref('setlist/${i.key}').remove(); event.stopPropagation();">Eliminar ✖</button>`;
+                managementCont.appendChild(div);
+
+                index++;
+            });
+        });
+
+        function marcarChipActivo() {
+            document.querySelectorAll('.song-chip').forEach(c => c.classList.remove('active-chip'));
+            db.ref('setlist').once('value', snap => {
+                snap.forEach(i => {
+                    if (i.val().id === cancionActivaId) {
+                        const activeChip = document.getElementById(`chip-${i.key}`);
+                        if (activeChip) activeChip.classList.add('active-chip');
+                    }
+                });
+            });
+        }
 
         function ajustarZoom(v) {
             zoomActual += v;
@@ -469,6 +669,7 @@
             const song = {
                 titulo: document.getElementById('input-titulo').value,
                 cantante: document.getElementById('input-cantante').value,
+                audioUrl: document.getElementById('input-audio-url').value,
                 tonoOriginalRegistrado: parseInt(document.getElementById('input-tono-original').value),
                 tonoBase: parseInt(document.getElementById('input-tono-cantante').value),
                 cuerpo: document.getElementById('input-cuerpo').value
@@ -476,12 +677,15 @@
             
             if(id) {
                 await db.ref('catalogo/' + id).set(song);
+                alert("¡Canción actualizada con éxito!");
             } else {
                 await db.ref('catalogo').push(song);
+                alert("¡Canción registrada con éxito!");
             }
             
-            document.getElementById('form-registro').reset();
-            document.getElementById('edit-id').value = "";
+            cancelarEdicion();
+            // Abre automáticamente el catálogo al guardar
+            document.getElementById('btn-tab-catalogo').click();
         }
 
         db.ref('catalogo').on('value', snap => {
@@ -498,14 +702,14 @@
             cancionesLocales.forEach(s => {
                 if (s.titulo.toLowerCase().includes(txt)) {
                     const item = document.createElement('div');
-                    item.style = "display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #334155; background: #0f172a; margin-bottom: 4px; border-radius: 4px; font-size: 0.9rem;";
+                    item.style = "display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #334155; background: #0f172a; margin-bottom: 6px; border-radius: 8px; font-size: 0.9rem;";
                     
                     item.innerHTML = `
-                        <span style="font-weight: bold; flex-grow: 1;">${s.titulo} <small style="color:#64748b;">(${escala[s.tonoBase] || 'C'})</small></span>
-                        <div style="display: flex; gap: 4px;">
-                            <button onclick='agregarAlSetlist("${s.id}")' style="background:none; border:1px solid #475569; color:white; padding:4px 8px; border-radius:4px;">➕</button>
-                            <button onclick='editarCancion("${s.id}")' style="background:none; border:1px solid #475569; color:white; padding:4px 8px; border-radius:4px;">✏️</button>
-                            <button onclick='eliminarCancion("${s.id}")' style="background:none; border:1px solid #475569; color:white; padding:4px 8px; border-radius:4px;">🗑️</button>
+                        <span style="font-weight: bold; flex-grow: 1;">${s.titulo} <small style="color:#38bdf8;">(${escala[s.tonoBase] || 'C'})</small></span>
+                        <div style="display: flex; gap: 6px;">
+                            <button onclick='agregarAlSetlist("${s.id}")' style="background:#10b981; border:none; color:white; padding:6px 10px; border-radius:6px; font-weight:bold; cursor:pointer;" title="Agregar a Orden de Hoy">➕ Agregar</button>
+                            <button onclick='editarCancion("${s.id}")' style="background:#334155; border:1px solid #475569; color:white; padding:6px 10px; border-radius:6px; cursor:pointer;" title="Editar">✏️</button>
+                            <button onclick='eliminarCancion("${s.id}")' style="background:#ef4444; border:none; color:white; padding:6px 10px; border-radius:6px; cursor:pointer;" title="Eliminar">🗑️</button>
                         </div>`;
                     list.appendChild(item);
                 }
@@ -514,7 +718,10 @@
 
         function agregarAlSetlist(id) {
             const cancion = cancionesLocales.find(c => c.id === id);
-            if(cancion) db.ref("setlist").push(cancion);
+            if(cancion) {
+                db.ref("setlist").push(cancion);
+                alert(`"${cancion.titulo}" agregada a la lista de hoy.`);
+            }
         }
 
         function editarCancion(id) {
@@ -523,34 +730,34 @@
                 document.getElementById('edit-id').value = s.id;
                 document.getElementById('input-titulo').value = s.titulo;
                 document.getElementById('input-cantante').value = s.cantante || "";
+                document.getElementById('input-audio-url').value = s.audioUrl || "";
                 document.getElementById('input-tono-original').value = s.tonoOriginalRegistrado || 0;
                 document.getElementById('input-tono-cantante').value = s.tonoBase || 0;
                 document.getElementById('input-cuerpo').value = s.cuerpo;
-                document.getElementById('panel-admin').style.display = 'block';
-                document.getElementById('panel-admin').scrollIntoView({ behavior: 'smooth' });
+                
+                document.getElementById('titulo-form').innerText = "✏️ EDITAR CANCIÓN";
+                document.getElementById('btn-guardar-txt').innerText = "ACTUALIZAR CANCIÓN 💾";
+                document.getElementById('btn-cancelar-edit').style.display = "block";
+
+                // Cambia a la pestaña de formulario
+                openTab(null, 'tab-admin');
+                document.querySelectorAll('.tab-button')[4].classList.add('active');
             }
+        }
+
+        function cancelarEdicion() {
+            document.getElementById('form-registro').reset();
+            document.getElementById('edit-id').value = "";
+            document.getElementById('titulo-form').innerText = "📝 MÓDULO DE REGISTRO";
+            document.getElementById('btn-guardar-txt').innerText = "GUARDAR EN LA BASE DE DATOS 💾";
+            document.getElementById('btn-cancelar-edit').style.display = "none";
         }
 
         function eliminarCancion(id) {
-            if(confirm("¿Seguro que quieres eliminar esta canción de la biblioteca?")) {
+            if(confirm("¿Seguro que quieres eliminar esta canción del catálogo general?")) {
                 db.ref('catalogo/' + id).remove();
             }
         }
-
-        db.ref('setlist').on('value', snap => {
-            const cont = document.getElementById('setlist-items');
-            cont.innerHTML = "";
-            snap.forEach(i => {
-                const s = i.val();
-                const div = document.createElement('div');
-                div.className = "item-setlist";
-                div.innerHTML = `<span>🎵 <b>${s.titulo}</b> <small style="color:#a7f3d0;">(${escala[s.tonoBase] || 'C'})</small></span> <button onclick="db.ref('setlist/${i.key}').remove()">✖</button>`;
-                div.onclick = (e) => { 
-                    if(e.target.tagName !== 'BUTTON') db.ref('musica_activa').set({ cancion: s, tono: s.tonoBase % 12 }); 
-                };
-                cont.appendChild(div);
-            });
-        });
 
         async function importarPDF(input) {
             const file = input.files[0]; if (!file) return;
@@ -575,13 +782,10 @@
             reader.readAsArrayBuffer(file);
         }
 
-        function toggleAdmin() { document.querySelectorAll('.admin-only').forEach(e => e.style.display = e.style.display === 'none' ? 'block' : 'none'); }
-
         window.onload = () => {
             const s1 = document.getElementById('input-tono-original');
             const s2 = document.getElementById('input-tono-cantante');
             
-            // Carga limpia de la escala completa con soporte explícito para menores
             escala.forEach((n, i) => {
                 s1.innerHTML += `<option value="${i}">${n}</option>`;
                 s2.innerHTML += `<option value="${i}">${n}</option>`;
