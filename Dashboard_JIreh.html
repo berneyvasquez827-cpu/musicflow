@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Administrativo - Control Pastoral</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        .tab-btn.active { border-bottom: 3px solid #6366f1; color: #818cf8; font-weight: bold; }
+        .filtro-estado-btn.active { background-color: #4f46e5; color: #ffffff; }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 font-sans min-h-screen">
+
+    <div class="max-w-6xl mx-auto p-4">
+        
+        <header class="flex flex-col md:flex-row justify-between items-center mb-6 bg-slate-800 p-4 rounded-xl border border-slate-700 shadow-lg">
+            <div>
+                <h1 class="text-2xl font-bold text-indigo-400">⚙️ Dashboard Pastoral</h1>
+                <p class="text-xs text-slate-400">Gestión de Personal, Reportes Mensuales y Descarga PDF</p>
+            </div>
+            <div class="mt-4 md:mt-0 flex gap-2">
+                <button onclick="generarPDF()" class="bg-red-600 hover:bg-red-500 text-white text-xs font-bold px-4 py-2 rounded-lg transition flex items-center gap-1">
+                    📄 DESCARGAR REPORTE EN PDF
+                </button>
+            </div>
+        </header>
+
+        <nav class="flex border-b border-slate-700 mb-6 bg-slate-800/50 rounded-t-xl">
+            <button onclick="cambiarTab('tab-dashboard')" id="btn-tab-dashboard" class="tab-btn active px-6 py-3 text-slate-400 hover:text-white transition">📊 Dashboard & Reportes</button>
+            <button onclick="cambiarTab('tab-hermanos')" id="btn-tab-hermanos" class="tab-btn px-6 py-3 text-slate-400 hover:text-white transition">👥 Registro de Personal</button>
+        </nav>
+
+        <div id="tab-dashboard" class="tab-content">
+            
+            <!-- FILTROS PRINCIPALES -->
+            <div class="bg-slate-800 border border-slate-700 p-4 rounded-xl mb-6 flex flex-wrap gap-4 items-center justify-between">
+                <div class="flex flex-wrap gap-4 items-center">
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">Actividad</label>
+                        <select id="filtro-actividad" onchange="cargarDashboard()" class="bg-slate-900 border border-slate-700 rounded-lg p-2 text-sm text-white">
+                            <option value="Devocional">🌅 Devocional</option>
+                            <option value="Ayuno">🙏 Ayuno</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">Seleccionar Mes</label>
+                        <input type="month" id="filtro-mes" onchange="cargarDashboard()" class="bg-slate-900 border border-slate-700 rounded-lg p-2 text-sm text-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">Día Específico (Opcional)</label>
+                        <input type="date" id="filtro-fecha" onchange="cargarDashboard()" class="bg-slate-900 border border-slate-700 rounded-lg p-2 text-sm text-white">
+                    </div>
+                </div>
+                <button onclick="limpiarFechaEspecifica()" class="text-xs text-indigo-400 hover:underline mt-2 md:mt-0">
+                    🔄 Ver resumen del Mes Completo
+                </button>
+            </div>
+
+            <div id="area-reporte-pdf" class="p-2 bg-slate-900 rounded-xl">
+
+                <!-- TARJETAS DE MÉTRICAS CLICABLES -->
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                    <div onclick="filtrarPorEstado('TODOS')" class="bg-slate-800 border border-slate-700 p-4 rounded-xl text-center cursor-pointer hover:border-indigo-500 transition">
+                        <p class="text-xs text-slate-400">Total Registros</p>
+                        <h3 id="m-total" class="text-3xl font-bold text-white mt-1">0</h3>
+                    </div>
+                    <div onclick="filtrarPorEstado('Presente')" class="bg-slate-800 border border-emerald-500/30 p-4 rounded-xl text-center cursor-pointer hover:border-emerald-500 transition">
+                        <p class="text-xs text-emerald-400">✅ Asistieron</p>
+                        <h3 id="m-presentes" class="text-3xl font-bold text-emerald-400 mt-1">0</h3>
+                    </div>
+                    <div onclick="filtrarPorEstado('Excusa')" class="bg-slate-800 border border-amber-500/30 p-4 rounded-xl text-center cursor-pointer hover:border-amber-500 transition">
+                        <p class="text-xs text-amber-400">🟡 Con Excusa</p>
+                        <h3 id="m-excusas" class="text-3xl font-bold text-amber-400 mt-1">0</h3>
+                    </div>
+                    <div onclick="filtrarPorEstado('Ausente')" class="bg-slate-800 border border-rose-500/30 p-4 rounded-xl text-center cursor-pointer hover:border-rose-500 transition">
+                        <p class="text-xs text-rose-400">🔴 Ausentes (Sin Excusa)</p>
+                        <h3 id="m-ausentes" class="text-3xl font-bold text-rose-400 mt-1">0</h3>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN DE GRÁFICAS -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                    
+                    <div class="bg-slate-800 border border-slate-700 p-4 rounded-xl flex flex-col items-center justify-center">
+                        <h3 class="text-xs font-bold mb-2 text-slate-300">Distribución General</h3>
+                        <div class="w-full max-w-[200px]">
+                            <canvas id="chartDona"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="lg:col-span-2 bg-slate-800 border border-slate-700 p-4 rounded-xl flex flex-col justify-center">
+                        <h3 class="text-xs font-bold mb-2 text-slate-300">Comparativo Mensual de Asistencia</h3>
+                        <div class="w-full h-[220px]">
+                            <canvas id="chartBarras"></canvas>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- TABLA DETALLADA CON FILTROS -->
+                <div class="bg-slate-800 border border-slate-700 p-4 rounded-xl">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                        <h3 id="titulo-tabla" class="text-sm font-bold text-slate-300">📋 Detalle de Personal</h3>
+                        
+                        <!-- BOTONES DE FILTRADO RÁPIDO DE LA TABLA -->
+                        <div class="flex flex-wrap gap-1 bg-slate-900 p-1 rounded-lg border border-slate-700 text-xs">
+                            <button id="btn-f-todos" onclick="filtrarPorEstado('TODOS')" class="filtro-estado-btn active px-3 py-1.5 rounded-md transition">Todos</button>
+                            <button id="btn-f-presente" onclick="filtrarPorEstado('Presente')" class="filtro-estado-btn px-3 py-1.5 rounded-md text-emerald-400 transition">✅ Asistieron</button>
+                            <button id="btn-f-excusa" onclick="filtrarPorEstado('Excusa')" class="filtro-estado-btn px-3 py-1.5 rounded-md text-amber-400 transition">🟡 Con Excusa</button>
+                            <button id="btn-f-ausente" onclick="filtrarPorEstado('Ausente')" class="filtro-estado-btn px-3 py-1.5 rounded-md text-rose-400 transition">🔴 Ausentes</button>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs text-slate-300">
+                            <thead class="bg-slate-700/50 uppercase text-slate-400">
+                                <tr>
+                                    <th class="p-2">Personal</th>
+                                    <th class="p-2">Fecha</th>
+                                    <th class="p-2">Estado</th>
+                                    <th class="p-2">Detalle / Motivo</th>
+                                    <th class="p-2 no-pdf text-center">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabla-novedades">
+                                <tr><td colspan="5" class="p-4 text-center text-slate-500">Cargando reporte...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <div id="tab-hermanos" class="tab-content hidden">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-slate-800 border border-slate-700 p-6 rounded-xl h-fit">
+                    <h3 class="text-md font-bold text-indigo-400 mb-4">✍️ Registrar Nuevo Personal</h3>
+                    <form id="form-hermano" onsubmit="guardarHermano(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-xs text-slate-400 mb-1">Nombre Completo *</label>
+                            <input type="text" id="nombre-hermano" required class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-slate-400 mb-1">Teléfono / WhatsApp</label>
+                            <input type="text" id="telefono-hermano" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white">
+                        </div>
+                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2.5 rounded-lg transition">
+                            Guardar en Base de Datos
+                        </button>
+                    </form>
+                </div>
+
+                <div class="md:col-span-2 bg-slate-800 border border-slate-700 p-6 rounded-xl">
+                    <h3 class="text-md font-bold text-slate-300 mb-4">📜 Personal Registrado</h3>
+                    <div id="lista-hermanos" class="space-y-2 max-h-[450px] overflow-y-auto"></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyCOYRDnksd3HmiATlMUdAG_uF2MZMi7qVE",
+            databaseURL: "https://musicflow-banda-default-rtdb.firebaseio.com"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        let chartDonaInstance = null;
+        let chartBarrasInstance = null;
+        let datosGlobalesTabla = [];
+        let estadoFiltroTabla = 'TODOS';
+
+        const hoy = new Date();
+        document.getElementById('filtro-mes').value = hoy.toISOString().substring(0, 7);
+
+        function cambiarTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabId).classList.remove('hidden');
+            document.getElementById(`btn-${tabId}`).classList.add('active');
+        }
+
+        function limpiarFechaEspecifica() {
+            document.getElementById('filtro-fecha').value = "";
+            cargarDashboard();
+        }
+
+        async function cargarDashboard() {
+            const mesSel = document.getElementById('filtro-mes').value;
+            const fechaSel = document.getElementById('filtro-fecha').value;
+            const actividad = document.getElementById('filtro-actividad').value;
+
+            const snapHermanos = await db.ref('hermanos').once('value');
+            if (!snapHermanos.exists()) {
+                document.getElementById('tabla-novedades').innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-500">No hay personal registrado en el sistema.</td></tr>`;
+                actualizarMetricas(0, 0, 0, 0);
+                renderChartDona(0, 0, 0);
+                renderChartBarras([], [], [], []);
+                return;
+            }
+
+            const personalTotal = snapHermanos.val();
+            const snapAsistencias = await db.ref('asistencias').once('value');
+            const todasAsistencias = snapAsistencias.exists() ? snapAsistencias.val() : {};
+
+            let presentes = 0, excusas = 0, ausentes = 0;
+            datosGlobalesTabla = [];
+
+            const mesesTotales = {};
+
+            Object.keys(todasAsistencias).forEach(idSesion => {
+                const partes = idSesion.split('_');
+                const fechaSesion = partes[0];
+                const actSesion = partes[1];
+
+                if (actSesion !== actividad) return;
+
+                const mesSesion = fechaSesion.substring(0, 7);
+
+                if (fechaSel && fechaSesion !== fechaSel) return;
+                if (!fechaSel && mesSel && mesSesion !== mesSel) return;
+
+                const detalles = todasAsistencias[idSesion].detalles || {};
+
+                if (!mesesTotales[mesSesion]) {
+                    mesesTotales[mesSesion] = { p: 0, e: 0, a: 0 };
+                }
+
+                Object.keys(personalTotal).forEach(id => {
+                    const persona = personalTotal[id];
+                    const reporte = detalles[id];
+
+                    let estadoFinal = "Ausente";
+                    let motivoFinal = "Sin excusa (No reportó)";
+                    let color = "text-rose-400";
+                    let tieneRegistro = false;
+
+                    if (reporte) {
+                        tieneRegistro = true;
+                        if (reporte.estado === 'Presente') {
+                            estadoFinal = "Presente";
+                            motivoFinal = "Asistió";
+                            color = "text-emerald-400";
+                            presentes++;
+                            mesesTotales[mesSesion].p++;
+                        } else if (reporte.estado === 'Excusa') {
+                            estadoFinal = "Excusa";
+                            motivoFinal = reporte.motivo || "Con excusa";
+                            color = "text-amber-400";
+                            excusas++;
+                            mesesTotales[mesSesion].e++;
+                        }
+                    } else {
+                        ausentes++;
+                        mesesTotales[mesSesion].a++;
+                    }
+
+                    // Guardar objeto para filtrado dinamico
+                    datosGlobalesTabla.push({
+                        idSesion,
+                        hermanoId: id,
+                        nombre: persona.nombre,
+                        fecha: fechaSesion,
+                        estado: estadoFinal,
+                        motivo: motivoFinal,
+                        color: color,
+                        tieneRegistro: tieneRegistro
+                    });
+                });
+            });
+
+            actualizarMetricas(datosGlobalesTabla.length, presentes, excusas, ausentes);
+            renderChartDona(presentes, excusas, ausentes);
+
+            const labelsMeses = Object.keys(mesesTotales).sort();
+            const dataP = labelsMeses.map(m => mesesTotales[m].p);
+            const dataE = labelsMeses.map(m => mesesTotales[m].e);
+            const dataA = labelsMeses.map(m => mesesTotales[m].a);
+
+            renderChartBarras(labelsMeses, dataP, dataE, dataA);
+            renderTabla();
+        }
+
+        // RENDERIZAR TABLA CON FILTROS
+        function filtrarPorEstado(estado) {
+            estadoFiltroTabla = estado;
+            document.querySelectorAll('.filtro-estado-btn').forEach(btn => btn.classList.remove('active'));
+            
+            if(estado === 'TODOS') document.getElementById('btn-f-todos').classList.add('active');
+            if(estado === 'Presente') document.getElementById('btn-f-presente').classList.add('active');
+            if(estado === 'Excusa') document.getElementById('btn-f-excusa').classList.add('active');
+            if(estado === 'Ausente') document.getElementById('btn-f-ausente').classList.add('active');
+
+            renderTabla();
+        }
+
+        function renderTabla() {
+            const tabla = document.getElementById('tabla-novedades');
+            tabla.innerHTML = "";
+
+            const filtrados = datosGlobalesTabla.filter(item => {
+                if (estadoFiltroTabla === 'TODOS') return true;
+                return item.estado === estadoFiltroTabla;
+            });
+
+            if (filtrados.length === 0) {
+                tabla.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-500">No hay registros con el filtro "${estadoFiltroTabla}".</td></tr>`;
+                return;
+            }
+
+            filtrados.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.className = "border-b border-slate-700/50";
+                tr.innerHTML = `
+                    <td class="p-2 font-semibold text-white">${item.nombre}</td>
+                    <td class="p-2 text-slate-400">${item.fecha}</td>
+                    <td class="p-2 font-bold ${item.color}">${item.estado}</td>
+                    <td class="p-2 text-slate-300 italic">${item.motivo}</td>
+                    <td class="p-2 text-center no-pdf">
+                        <div class="flex justify-center gap-1">
+                            <button onclick="editarRegistro('${item.idSesion}', '${item.hermanoId}', '${item.nombre}', '${item.estado}', '${item.motivo}')" title="Editar" class="bg-indigo-600/80 hover:bg-indigo-500 text-white p-1 px-2 rounded text-xs transition">✏️</button>
+                            ${item.tieneRegistro ? `<button onclick="eliminarRegistroAsistencia('${item.idSesion}', '${item.hermanoId}', '${item.nombre}')" title="Borrar" class="bg-rose-600/80 hover:bg-rose-500 text-white p-1 px-2 rounded text-xs transition">🗑️</button>` : ''}
+                        </div>
+                    </td>
+                `;
+                tabla.appendChild(tr);
+            });
+        }
+
+        function actualizarMetricas(t, p, e, a) {
+            document.getElementById('m-total').innerText = t;
+            document.getElementById('m-presentes').innerText = p;
+            document.getElementById('m-excusas').innerText = e;
+            document.getElementById('m-ausentes').innerText = a;
+        }
+
+        function renderChartDona(p, e, a) {
+            const ctx = document.getElementById('chartDona').getContext('2d');
+            if (chartDonaInstance) chartDonaInstance.destroy();
+            chartDonaInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Presentes', 'Excusas', 'Ausentes'],
+                    datasets: [{
+                        data: [p, e, a],
+                        backgroundColor: ['#10b981', '#f59e0b', '#f43f5e'],
+                        borderWidth: 0
+                    }]
+                },
+                options: { plugins: { legend: { display: false } }, cutout: '70%' }
+            });
+        }
+
+        function renderChartBarras(labels, dataP, dataE, dataA) {
+            const ctx = document.getElementById('chartBarras').getContext('2d');
+            if (chartBarrasInstance) chartBarrasInstance.destroy();
+            chartBarrasInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels.length ? labels : ['Sin Datos'],
+                    datasets: [
+                        { label: 'Presentes', data: dataP, backgroundColor: '#10b981' },
+                        { label: 'Excusas', data: dataE, backgroundColor: '#f59e0b' },
+                        { label: 'Ausentes', data: dataA, backgroundColor: '#f43f5e' }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { labels: { color: '#94a3b8' } } },
+                    scales: {
+                        x: { ticks: { color: '#94a3b8' }, grid: { display: false } },
+                        y: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } }
+                    }
+                }
+            });
+        }
+
+        function editarRegistro(idSesion, hermanoId, nombre, estadoActual, motivoActual) {
+            const nuevoEstado = prompt(`Corregir estado de ${nombre}:\nEscribe: "Presente" o "Excusa"`, estadoActual);
+            if (!nuevoEstado) return;
+
+            const estadoLimpio = nuevoEstado.trim();
+            if (estadoLimpio !== 'Presente' && estadoLimpio !== 'Excusa') {
+                alert("Estado no válido. Escribe sólo 'Presente' o 'Excusa'.");
+                return;
+            }
+
+            let nuevoMotivo = "Asistió normalmente";
+            if (estadoLimpio === 'Excusa') {
+                nuevoMotivo = prompt(`Ingresa la justificación de inasistencia para ${nombre}:`, motivoActual !== "Sin excusa (No reportó)" ? motivoActual : "");
+                if (!nuevoMotivo) {
+                    alert("Es obligatorio ingresar un motivo para la excusa.");
+                    return;
+                }
+            }
+
+            db.ref(`asistencias/${idSesion}/detalles/${hermanoId}`).set({
+                nombre: nombre,
+                estado: estadoLimpio,
+                motivo: nuevoMotivo
+            }).then(() => cargarDashboard());
+        }
+
+        function eliminarRegistroAsistencia(idSesion, hermanoId, nombre) {
+            if (confirm(`¿Borrar el registro de ${nombre}? Volverá a quedar como Ausente.`)) {
+                db.ref(`asistencias/${idSesion}/detalles/${hermanoId}`).remove().then(() => cargarDashboard());
+            }
+        }
+
+        function guardarHermano(e) {
+            e.preventDefault();
+            const nombre = document.getElementById('nombre-hermano').value.trim();
+            const telefono = document.getElementById('telefono-hermano').value.trim();
+            if(nombre) {
+                db.ref('hermanos').push({ nombre, telefono }).then(() => {
+                    document.getElementById('form-hermano').reset();
+                    cargarDashboard();
+                });
+            }
+        }
+
+        db.ref('hermanos').on('value', snap => {
+            const cont = document.getElementById('lista-hermanos');
+            cont.innerHTML = "";
+            if(!snap.exists()) {
+                cont.innerHTML = "<p class='text-slate-500 text-xs'>Sin registros.</p>";
+                return;
+            }
+            snap.forEach(c => {
+                const h = c.val();
+                cont.innerHTML += `
+                    <div class="flex justify-between items-center bg-slate-900 border border-slate-700/50 p-3 rounded-lg text-xs">
+                        <div><b class="text-white">${h.nombre}</b> <span class="text-slate-400 block">${h.telefono || 'Sin tel'}</span></div>
+                        <button onclick="eliminarHermano('${c.key}')" class="text-rose-400 hover:underline">Eliminar</button>
+                    </div>`;
+            });
+        });
+
+        function eliminarHermano(key) {
+            if(confirm("¿Eliminar este personal de la base de datos?")) {
+                db.ref(`hermanos/${key}`).remove().then(() => cargarDashboard());
+            }
+        }
+
+        function generarPDF() {
+            const elementosNoPdf = document.querySelectorAll('.no-pdf');
+            elementosNoPdf.forEach(el => el.style.display = 'none');
+
+            const elemento = document.getElementById('area-reporte-pdf');
+            const mes = document.getElementById('filtro-mes').value;
+            const actividad = document.getElementById('filtro-actividad').value;
+
+            const opt = {
+                margin:       0.5,
+                filename:     `Reporte_Mensual_${actividad}_${mes}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, backgroundColor: '#0f172a' },
+                jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+            };
+
+            html2pdf().set(opt).from(elemento).save().then(() => {
+                elementosNoPdf.forEach(el => el.style.display = '');
+            });
+        }
+
+        window.onload = cargarDashboard;
+    </script>
+</body>
+</html>
