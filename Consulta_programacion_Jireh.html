@@ -252,7 +252,7 @@
             Alpine.data('appConsulta', () => ({
                 cargando: true,
                 filtroAno: '2026',
-                filtroMes: '07', // se actualiza en init()
+                filtroMes: '07',
                 fechasMiercoles: [],
                 fechasViernes: [],
                 fechasDomingos: [],
@@ -266,13 +266,15 @@
                 cronogramaDatosGlobal: {},
 
                 init() {
-                    // ====== NUEVO: Establecer mes actual automáticamente ======
+                    // ====== Establecer mes actual automáticamente ======
                     const hoy = new Date();
                     this.filtroAno = String(hoy.getFullYear());
                     this.filtroMes = String(hoy.getMonth() + 1).padStart(2, '0');
                     
+                    // ====== Calcular el calendario del mes actual ======
                     this.calcularCalendarioMes();
                     
+                    // ====== Conectar a Firebase ======
                     let intento = 0;
                     let checkCloud = setInterval(() => {
                         if (window.firebaseCloudCargado && window.conectarConsultaCloud) {
@@ -287,7 +289,7 @@
                     }, 400);
                 },
 
-                // ====== NUEVO: Método para cambiar de período ======
+                // ====== Método para cambiar de período manualmente ======
                 cambiarPeriodo() {
                     this.calcularCalendarioMes();
                 },
@@ -295,6 +297,7 @@
                 calcularCalendarioMes() {
                     let periodo = `${this.filtroAno}_${this.filtroMes}`;
 
+                    // Sincronizar el estado del festivo
                     if (this.cronogramaDatosGlobal[periodo] && this.cronogramaDatosGlobal[periodo].esLunesOracionFestivo !== undefined) {
                         this.esLunesOracionFestivo = this.cronogramaDatosGlobal[periodo].esLunesOracionFestivo;
                     } else {
@@ -352,6 +355,12 @@
                     while (this.fechasMiercoles.length < 5) this.fechasMiercoles.push('+1');
                     while (this.fechasViernes.length < 5) this.fechasViernes.push('+1');
                     while (this.fechasDomingos.length < 5) this.fechasDomingos.push('+1');
+                    
+                    // ====== LOG DE DEPURACIÓN ======
+                    console.log(`📅 Mostrando calendario para: ${this.obtenerNombreMesYId()}`);
+                    console.log('  Miércoles:', this.fechasMiercoles);
+                    console.log('  Viernes:  ', this.fechasViernes);
+                    console.log('  Domingos: ', this.fechasDomingos);
                 },
 
                 getValorDinamico(bloqueId, rol) {
@@ -429,8 +438,13 @@
                         datosTemp[doc.id] = doc.data();
                     });
                     alpineComp.cronogramaDatosGlobal = datosTemp;
+                    
+                    // ====== IMPORTANTE: Recalcular el calendario del mes actual ======
+                    // Esto asegura que siempre muestre el mes que está seleccionado
                     alpineComp.calcularCalendarioMes();
                     alpineComp.cargando = false;
+                    
+                    console.log('📥 Datos de Firebase cargados para el mes:', alpineComp.filtroMes);
                 }, (error) => {
                     console.error("Error al leer datos remotos:", error);
                     alpineComp.cargando = false;
