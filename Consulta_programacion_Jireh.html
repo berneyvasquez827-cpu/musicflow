@@ -4,14 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Jehova Jireh Music - Consulta de Cronograma</title>
-    <!-- Tailwind CSS v3 (Cargador clásico más compatible con exportación de imágenes) -->
+    <!-- Tailwind CSS v3 -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome para los Iconos -->
+    <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Alpine.js -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-
-    <!-- Scripts de exportación agregados para que los botones tengan vida -->
+    <!-- Scripts de exportación -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 </head>
@@ -30,11 +29,11 @@
             <!-- Selector de Período -->
             <div class="flex items-center gap-2 bg-slate-800 p-2 rounded-xl border border-slate-700 w-full sm:w-auto justify-center">
                 <i class="fa-solid fa-calendar-check text-red-500 px-2"></i>
-                <select x-model="filtroAno" @change="calcularCalendarioMes()" class="bg-slate-900 text-white p-1.5 rounded-lg text-sm font-bold border-none focus:outline-none">
+                <select x-model="filtroAno" @change="cambiarPeriodo()" class="bg-slate-900 text-white p-1.5 rounded-lg text-sm font-bold border-none focus:outline-none">
                     <option value="2026">2026</option>
                     <option value="2027">2027</option>
                 </select>
-                <select x-model="filtroMes" @change="calcularCalendarioMes()" class="bg-slate-900 text-white p-1.5 rounded-lg text-sm font-bold border-none focus:outline-none">
+                <select x-model="filtroMes" @change="cambiarPeriodo()" class="bg-slate-900 text-white p-1.5 rounded-lg text-sm font-bold border-none focus:outline-none">
                     <option value="01">Enero</option>
                     <option value="02">Febrero</option>
                     <option value="03">Marzo</option>
@@ -54,17 +53,15 @@
 
     <main class="max-w-7xl mx-auto px-4 py-8 space-y-8">
 
-        <!-- NUEVA: Barra de herramientas con los botones integrados que hacían falta -->
+        <!-- Barra de herramientas -->
         <div x-show="!cargando" class="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-4 rounded-2xl shadow-sm border border-slate-200" x-transition>
             <div class="text-slate-600 text-xs sm:text-sm font-medium text-center sm:text-left">
                 <i class="fa-solid fa-circle-info text-blue-500 mr-1"></i> Descarga el reporte para compartirlo en el grupo de alabanza.
             </div>
             <div class="flex items-center gap-3 w-full sm:w-auto">
-                <!-- Botón de PDF -->
                 <button @click="exportarA_PDF()" class="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white text-xs sm:text-sm font-bold px-5 py-2.5 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer">
                     <i class="fa-solid fa-file-pdf text-base"></i> Guardar PDF
                 </button>
-                <!-- Botón de Imagen -->
                 <button @click="exportarA_Imagen()" class="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-bold px-5 py-2.5 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer">
                     <i class="fa-solid fa-image text-base"></i> Captura para WhatsApp
                 </button>
@@ -77,7 +74,7 @@
             <p class="text-slate-500 font-medium">Sincronizando con el altar en la nube...</p>
         </div>
 
-        <!-- ID AGREGADO: Cerramos todo el bloque dinámico en este contenedor para poder exportarlo nítido -->
+        <!-- Contenedor del cronograma (exportable) -->
         <div x-show="!cargando" id="seccion-cronograma" class="space-y-8 bg-slate-50 p-2 rounded-xl" x-transition>
 
             <!-- Título del Mes Consultado -->
@@ -99,10 +96,10 @@
                 </div>
             </div>
 
-            <!-- Bloques Especiales: Aseo del Altar, Oración y Ayuno (Ahora son 3 tarjetas) -->
+            <!-- Bloques Especiales: Aseo, Oración y Ayuno -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 
-                <!-- Tarjeta Aseo del Altar (NUEVA) -->
+                <!-- Tarjeta Aseo del Altar -->
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
                     <div class="bg-amber-600 text-white p-4 font-bold flex justify-between items-center">
                         <span class="flex items-center gap-2"><i class="fa-solid fa-broom"></i> Aseo del Altar</span>
@@ -167,7 +164,7 @@
                         <thead class="bg-slate-100 text-slate-600 uppercase text-xs font-bold border-b">
                             <tr>
                                 <th class="p-3">Rol Ministerial</th>
-                                <template x-for="(fecha, index) in fechasMiercoles">
+                                <template x-for="(fecha, index) in fechasMiercoles" :key="index">
                                     <th class="p-3 text-center" :class="index % 2 === 0 ? 'bg-emerald-50 text-emerald-950 font-extrabold' : ''" x-text="`Mié ${fecha}/${filtroMes}`"></th>
                                 </template>
                             </tr>
@@ -176,7 +173,7 @@
                             <template x-for="rol in ['Coordinación', 'Prédica']">
                                 <tr class="hover:bg-slate-50">
                                     <td class="p-3 font-bold text-slate-900" x-text="rol"></td>
-                                    <template x-for="(fecha, index) in fechasMiercoles">
+                                    <template x-for="(fecha, index) in fechasMiercoles" :key="index">
                                         <td class="text-center p-3 text-slate-700" :class="index % 2 === 0 ? 'bg-emerald-50/20 font-semibold' : ''" x-text="getValorDinamico('mie_g' + (index+1), rol)"></td>
                                     </template>
                                 </tr>
@@ -196,7 +193,7 @@
                         <thead class="bg-slate-100 text-slate-600 uppercase text-xs font-bold border-b">
                             <tr>
                                 <th class="p-3">Asignación</th>
-                                <template x-for="(fecha, index) in fechasViernes">
+                                <template x-for="(fecha, index) in fechasViernes" :key="index">
                                     <th class="p-3 text-center" :class="index % 2 === 0 ? 'bg-purple-50 text-purple-950 font-extrabold' : ''" x-text="`G${index+1} (${fecha}-${filtroMes})`"></th>
                                 </template>
                             </tr>
@@ -205,7 +202,7 @@
                             <template x-for="rol in ['Voz Principal 1', 'Voz Principal 2', 'Coro 1', '1er Pianista', 'Percusion Menor']">
                                 <tr class="hover:bg-slate-50">
                                     <td class="p-3 font-bold text-slate-900" x-text="rol"></td>
-                                    <template x-for="(fecha, index) in fechasViernes">
+                                    <template x-for="(fecha, index) in fechasViernes" :key="index">
                                         <td class="text-center p-3 text-slate-700" :class="index % 2 === 0 ? 'bg-purple-50/20 font-semibold' : ''" x-text="getValorDinamico('vie_g' + (index+1), rol)"></td>
                                     </template>
                                 </tr>
@@ -225,7 +222,7 @@
                         <thead class="bg-slate-100 text-slate-600 uppercase text-xs font-bold border-b">
                             <tr>
                                 <th class="p-3">Rol del Servicio</th>
-                                <template x-for="(fecha, index) in fechasDomingos">
+                                <template x-for="(fecha, index) in fechasDomingos" :key="index">
                                     <th class="p-3 text-center" :class="index % 2 === 0 ? 'bg-sky-50 text-sky-950 font-extrabold' : ''" x-text="`G${index+1} (${fecha}-${filtroMes})`"></th>
                                 </template>
                             </tr>
@@ -234,7 +231,7 @@
                             <template x-for="rol in ['Voz Principal 1', 'Voz Principal 2', 'Coro 1', 'Coro 2', 'Coro 3', '1er Pianista', '2do Pianista', 'Guitarra Electrica', 'Bajo', 'Bateria', 'Percusion Menor']">
                                 <tr class="hover:bg-slate-50">
                                     <td class="p-3 font-bold text-slate-900" x-text="rol"></td>
-                                    <template x-for="(fecha, index) in fechasDomingos">
+                                    <template x-for="(fecha, index) in fechasDomingos" :key="index">
                                         <td class="p-3 text-center text-slate-700" :class="index % 2 === 0 ? 'bg-sky-50/30 font-semibold' : ''" x-text="getValorDinamico('dom_g' + (index+1), rol)"></td>
                                     </template>
                                 </tr>
@@ -255,7 +252,7 @@
             Alpine.data('appConsulta', () => ({
                 cargando: true,
                 filtroAno: '2026',
-                filtroMes: '07',
+                filtroMes: '07', // se actualiza en init()
                 fechasMiercoles: [],
                 fechasViernes: [],
                 fechasDomingos: [],
@@ -269,6 +266,11 @@
                 cronogramaDatosGlobal: {},
 
                 init() {
+                    // ====== NUEVO: Establecer mes actual automáticamente ======
+                    const hoy = new Date();
+                    this.filtroAno = String(hoy.getFullYear());
+                    this.filtroMes = String(hoy.getMonth() + 1).padStart(2, '0');
+                    
                     this.calcularCalendarioMes();
                     
                     let intento = 0;
@@ -280,15 +282,19 @@
                         intento++;
                         if (intento > 15) {
                             clearInterval(checkCloud);
-                            this.cargando = false; // Detener spinner si falla red
+                            this.cargando = false;
                         }
                     }, 400);
+                },
+
+                // ====== NUEVO: Método para cambiar de período ======
+                cambiarPeriodo() {
+                    this.calcularCalendarioMes();
                 },
 
                 calcularCalendarioMes() {
                     let periodo = `${this.filtroAno}_${this.filtroMes}`;
 
-                    // Sincronizar el estado del festivo según los datos que vengan de la base de datos
                     if (this.cronogramaDatosGlobal[periodo] && this.cronogramaDatosGlobal[periodo].esLunesOracionFestivo !== undefined) {
                         this.esLunesOracionFestivo = this.cronogramaDatosGlobal[periodo].esLunesOracionFestivo;
                     } else {
@@ -314,13 +320,13 @@
                         let diaSemana = fechaObjeto.getDay();
                         let diaFormateado = d < 10 ? '0' + d : d;
 
-                        if (diaSemana === 1) { // Lunes
+                        if (diaSemana === 1) {
                             lunesContados++;
                             if (lunesContados === 2) diaLunesSegundaSemana = d;
                         }
                         if (diaSemana === 3) this.fechasMiercoles.push(diaFormateado);
                         if (diaSemana === 5) this.fechasViernes.push(diaFormateado);
-                        if (diaSemana === 0) { // Domingo
+                        if (diaSemana === 0) {
                             this.fechasDomingos.push(diaFormateado);
                             domingosContados++;
                             if (domingosContados === 1) diaPrimerDomingo = d;
@@ -328,11 +334,9 @@
                         }
                     }
 
-                    // Fecha del Aseo del Altar (Primer Domingo)
                     this.fechaAseoAltar = diaPrimerDomingo < 10 ? '0' + diaPrimerDomingo : diaPrimerDomingo;
                     this.labelAseoAltar = `Primer Domingo ${this.fechaAseoAltar}`;
 
-                    // Ajuste visual del Lunes o Martes Ministerial según el switch remoto
                     if (this.esLunesOracionFestivo) {
                         let diaMartes = diaLunesSegundaSemana + 1;
                         this.fechaOracionCalculada = diaMartes < 10 ? '0' + diaMartes : diaMartes;
@@ -365,7 +369,6 @@
                     return `${mesesStr[this.filtroMes]} ${this.filtroAno}`;
                 },
 
-                // REPARADO: Generación de PDF limpia con html2pdf
                 exportarA_PDF() {
                     const elemento = document.getElementById('seccion-cronograma');
                     const opciones = {
@@ -378,18 +381,14 @@
                     html2pdf().set(opciones).from(elemento).save();
                 },
 
-                // REPARADO: Captura de pantalla nativa con html2canvas puro
                 exportarA_Imagen() {
                     const elemento = document.getElementById('seccion-cronograma');
-                    
-                    // Aseguramos visibilidad y colores sólidos para el render de la imagen
                     window.scrollTo(0, 0); 
-                    
                     html2canvas(elemento, {
                         scale: 2,
                         useCORS: true,
                         allowTaint: true,
-                        backgroundColor: "#f8fafc" // Asegura el tono slate-50 de fondo
+                        backgroundColor: "#f8fafc"
                     }).then(canvas => {
                         const link = document.createElement('a');
                         link.download = `Cronograma_WhatsApp_${this.filtroMes}_${this.filtroAno}.png`;
@@ -404,7 +403,7 @@
         });
     </script>
 
-    <!-- Script de Firebase en tiempo real para la consulta -->
+    <!-- Script de Firebase en tiempo real -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -424,15 +423,12 @@
             window.firebaseCloudCargado = true;
 
             window.conectarConsultaCloud = (alpineComp) => {
-                // Escucha en vivo la colección de cronogramas
                 onSnapshot(collection(db, "cronogramas_globales"), (snapshot) => {
                     let datosTemp = {};
                     snapshot.forEach((doc) => {
                         datosTemp[doc.id] = doc.data();
                     });
                     alpineComp.cronogramaDatosGlobal = datosTemp;
-                    
-                    // Forzar el recálculo para renderizar la tabla con datos frescos
                     alpineComp.calcularCalendarioMes();
                     alpineComp.cargando = false;
                 }, (error) => {
